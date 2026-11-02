@@ -1,0 +1,886 @@
+{
+  "run_id": "frontier-claude-fused-20261102-a",
+  "provider": "claude",
+  "error": "RuntimeError: One or more live checks failed; inspect retained trace",
+  "elapsed_wall_s": 58.17573070900107,
+  "model_metadata": {
+    "provider": "claude",
+    "cli_version": "2.1.316",
+    "requested_model": "claude-opus-5-5",
+    "requested_effort": "xhigh",
+    "launcher_profile": "startup",
+    "max_tokens_enforcement": "not_enforced",
+    "timesfm_repo": "google/timesfm-3.0-pytorch",
+    "timesfm_revision": "43046b85ec22d584a13f8098c2ed39c889e129c2",
+    "timesfm_checkpoint": "/Users/rachitt/.cache/huggingface/hub/models--google--timesfm-3.0-pytorch/snapshots/43046b85ec22d584a13f8098c2ed39c889e129c2/model.safetensors",
+    "timesfm_load_s": 2.0246748750068946,
+    "timesfm_weight_sha256": "a7592b0a8432baee54483254e5647856911ce69e09d09a9bb65904b2d98f17da"
+  },
+  "results": {
+    "frozen_clock": {
+      "type": "result",
+      "request_id": "frontier-claude-fused-20261102-a:frozen_clock",
+      "monotonic": 52850.755500958,
+      "text": "PENDING",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1448,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3744,
+      "output_tokens": 58,
+      "finish_reason": "end_turn",
+      "elapsed_s": 3.685122125003545,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.0132108,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 12,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": true,
+      "snapshot_elapsed_s": 4.006359375001921,
+      "answer_as_of_mono": 52847.069161041,
+      "answer_as_of_utc": "2026-11-02T17:32:24.470Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 72,
+        "wall_utc": "2026-11-02T17:32:28.166Z",
+        "start_wall_utc": "2026-11-02T17:32:20.464Z",
+        "elapsed_s": 7.702576792005857,
+        "now_mono": 52850.765378458,
+        "observation": {
+          "value": 54.738945952893026,
+          "age_s": 0.09598970800288953,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 4.702267000000575,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 7.702275750001718,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 4.6979310830065515,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 4.6979310830065515
+      }
+    },
+    "fresh_clock": {
+      "type": "result",
+      "request_id": "frontier-claude-fused-20261102-a:fresh_clock",
+      "monotonic": 52855.078744958,
+      "text": "EXPIRED",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1528,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3824,
+      "output_tokens": 8,
+      "finish_reason": "end_turn",
+      "elapsed_s": 4.312983625000925,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.0128508,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 12,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 7.702698125001916,
+      "answer_as_of_mono": 52850.765499791,
+      "answer_as_of_utc": "2026-11-02T17:32:28.166Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 113,
+        "wall_utc": "2026-11-02T17:32:32.485Z",
+        "start_wall_utc": "2026-11-02T17:32:20.464Z",
+        "elapsed_s": 12.021727250001277,
+        "now_mono": 52855.084528916,
+        "observation": {
+          "value": 53.42405915481692,
+          "age_s": 0.02313845799653791,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 9.021417457995994,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 12.021426207997138,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 9.017081541001971,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 9.017081541001971
+      }
+    },
+    "elapsed_number": {
+      "type": "result",
+      "request_id": "frontier-claude-fused-20261102-a:elapsed_number",
+      "monotonic": 52859.10848975,
+      "text": "12.022",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1526,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3822,
+      "output_tokens": 5,
+      "finish_reason": "end_turn",
+      "elapsed_s": 4.0236725409995415,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.0127748,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 12,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 12.021795042004669,
+      "answer_as_of_mono": 52855.084596708,
+      "answer_as_of_utc": "2026-11-02T17:32:32.485Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 150,
+        "wall_utc": "2026-11-02T17:32:36.517Z",
+        "start_wall_utc": "2026-11-02T17:32:20.464Z",
+        "elapsed_s": 16.052830375003396,
+        "now_mono": 52859.115632041,
+        "observation": {
+          "value": 51.7374041951601,
+          "age_s": 0.08503137499792501,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 13.052520582998113,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 16.052529332999256,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 13.04818466600409,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 13.04818466600409
+      }
+    },
+    "race": {
+      "type": "result",
+      "request_id": "frontier-claude-fused-20261102-a:race",
+      "monotonic": 52874.019509416,
+      "text": "1. As of the 2026-11-02T17:32:36.517Z snapshot, the system is in NORMAL mode, and the current facts confirm it as `{\"mode\": \"NORMAL\"}`.\n2. That mode comes from an event observed 16.053 seconds ago with payload `{\"value\":\"NORMAL\"}`, which matches the 16.053 seconds of run time, so NORMAL has been the mode since the run started.\n3. The latest measurement is 51.7374041951601, and the supplied situation gives no units, expected range or alarm threshold for it.\n4. That measurement was observed 0.085 seconds ago, so it is FRESH under the 1.000-second limit with about 0.915 seconds to spare at snapshot time.\n5. The probe deadline is EXPIRED, since its scheduled time passed 13.053 seconds ago, about 3.000 seconds into the run.\n6. Its `deadline_due` event (`{\"deadline_id\":\"probe\"}`) was observed 13.048 seconds ago, about 0.005 seconds after the scheduled time, so the deadline was delivered as expected and is not overdue.\n7. The plan should treat the probe deadline as finished and should not wait for it, re-trigger it or call it missed.\n8. Before relying on any measurement, check its age again, because the current reading becomes stale once it is more than 1.000 seconds old.\n9. If a fresh measurement does not arrive within the 1.000-second limit, mark the value as STALE and stop treating 51.7374041951601 as the current state.\n10. Keep watching for new mode events and treat NORMAL as current only while the current facts still show `\"mode\": \"NORMAL\"`.\n11. Record each new measurement's value and observation time so changes from 51.7374041951601 can be tracked, but don't judge it good or bad without a supplied threshold.\n12. Any new deadline events should be checked the same way, by comparing scheduled and observed times, as was done for the probe's 0.005-second delivery gap.",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1544,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3840,
+      "output_tokens": 1246,
+      "finish_reason": "end_turn",
+      "elapsed_s": 14.903421708004316,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.037738799999999996,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 200,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": false,
+      "validity_reason": "state_changed",
+      "control_only": false,
+      "snapshot_elapsed_s": 16.052966167000704,
+      "answer_as_of_mono": 52859.115767833,
+      "answer_as_of_utc": "2026-11-02T17:32:36.517Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-fused-20261102-a",
+        "revision": 6,
+        "data_revision": 290,
+        "wall_utc": "2026-11-02T17:32:51.424Z",
+        "start_wall_utc": "2026-11-02T17:32:20.464Z",
+        "elapsed_s": 30.959753667004406,
+        "now_mono": 52874.022555333,
+        "observation": {
+          "value": 68.69610812494302,
+          "age_s": 0.07117837500118185,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 27.959443874999124,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 6.732309874998464,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 30.959452625000267,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 27.9551079580051,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 6.982321791998402,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 6.721348999999464,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 6.721348999999464
+      }
+    },
+    "refresh": {
+      "type": "result",
+      "request_id": "frontier-claude-fused-20261102-a:refresh",
+      "monotonic": 52877.719157208,
+      "text": "ALARM; EXPIRED",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1679,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3975,
+      "output_tokens": 13,
+      "finish_reason": "end_turn",
+      "elapsed_s": 3.6960883749998175,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.0141588,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 20,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 30.959921166999266,
+      "answer_as_of_mono": 52874.022722833,
+      "answer_as_of_utc": "2026-11-02T17:32:51.424Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-fused-20261102-a",
+        "revision": 6,
+        "data_revision": 325,
+        "wall_utc": "2026-11-02T17:32:55.126Z",
+        "start_wall_utc": "2026-11-02T17:32:20.464Z",
+        "elapsed_s": 34.66213108400552,
+        "now_mono": 52877.72493275,
+        "observation": {
+          "value": 68.73073198431905,
+          "age_s": 0.00025208400620613247,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 31.66182129200024,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 10.43468729199958,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 34.661830042001384,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 31.657485375006218,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 10.684699208999518,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 10.42372641700058,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 10.42372641700058
+      }
+    },
+    "freshness": {
+      "type": "result",
+      "request_id": "frontier-claude-fused-20261102-a:freshness",
+      "monotonic": 52882.896569041,
+      "text": "STALE",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1651,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3947,
+      "output_tokens": 37,
+      "finish_reason": "end_turn",
+      "elapsed_s": 3.5608915419943514,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.014414799999999998,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 12,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": false,
+      "validity_reason": "observation_changed",
+      "control_only": false,
+      "snapshot_elapsed_s": 36.272327958999085,
+      "answer_as_of_mono": 52879.335129625,
+      "answer_as_of_utc": "2026-11-02T17:32:56.736Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-fused-20261102-a",
+        "revision": 7,
+        "data_revision": 345,
+        "wall_utc": "2026-11-02T17:33:00.301Z",
+        "start_wall_utc": "2026-11-02T17:32:20.464Z",
+        "elapsed_s": 39.83684920900123,
+        "now_mono": 52882.899650875,
+        "observation": {
+          "value": 66.44524653864354,
+          "age_s": 0.03548800000135088,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 36.83653941699595,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 15.609405416995287,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 36.832203500001924,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 15.859417333995225,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 15.598444541996287,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 5.17457375000231,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 5.17457375000231
+      }
+    },
+    "forecast": {
+      "type": "result",
+      "request_id": "frontier-claude-fused-20261102-a:forecast",
+      "monotonic": 52893.803502916,
+      "point": [
+        70.98626708984375,
+        71.0967025756836,
+        71.18909454345703,
+        71.30207061767578,
+        71.38807678222656,
+        71.48416900634766,
+        71.5792236328125,
+        71.68489837646484,
+        71.78077697753906,
+        71.87692260742188,
+        71.9720687866211,
+        72.05905151367188,
+        72.16355895996094,
+        72.24701690673828,
+        72.34830474853516,
+        72.44324493408203,
+        72.54605102539062,
+        72.62163543701172,
+        72.70686340332031,
+        72.79786682128906,
+        72.89247131347656,
+        72.9801025390625,
+        73.05558013916016,
+        73.15755462646484,
+        73.23429107666016,
+        73.31653594970703,
+        73.40082550048828,
+        73.48017120361328,
+        73.56781768798828,
+        73.63790893554688,
+        73.72422790527344,
+        73.8039779663086,
+        73.88006591796875,
+        73.9515609741211,
+        74.02394104003906,
+        74.11296844482422,
+        74.18046569824219,
+        74.2569808959961,
+        74.32838439941406,
+        74.3975601196289,
+        74.47154998779297,
+        74.53272247314453,
+        74.58866882324219,
+        74.65878295898438,
+        74.71853637695312,
+        74.78295135498047,
+        74.85002136230469,
+        74.90393829345703,
+        74.95498657226562,
+        75.01126098632812,
+        75.0543212890625,
+        75.1211929321289,
+        75.172607421875,
+        75.2217025756836,
+        75.27848815917969,
+        75.30844116210938,
+        75.37722778320312,
+        75.42459106445312,
+        75.46891784667969,
+        75.5118408203125,
+        75.55294799804688,
+        75.60717010498047,
+        75.62884521484375,
+        75.69125366210938
+      ],
+      "q10": [
+        70.97545623779297,
+        71.06873321533203,
+        71.1612319946289,
+        71.26496887207031,
+        71.35200500488281,
+        71.459228515625,
+        71.55157470703125,
+        71.65219116210938,
+        71.74126434326172,
+        71.84214782714844,
+        71.93264770507812,
+        72.02619171142578,
+        72.12165069580078,
+        72.21546936035156,
+        72.29341125488281,
+        72.40757751464844,
+        72.48394775390625,
+        72.57620239257812,
+        72.64469146728516,
+        72.75111389160156,
+        72.81747436523438,
+        72.90249633789062,
+        72.98751831054688,
+        73.05439758300781,
+        73.13533020019531,
+        73.22755432128906,
+        73.2986831665039,
+        73.37007904052734,
+        73.45282745361328,
+        73.51278686523438,
+        73.57351684570312,
+        73.6532974243164,
+        73.71981811523438,
+        73.7840576171875,
+        73.85005187988281,
+        73.93281555175781,
+        73.97831726074219,
+        74.03362274169922,
+        74.103515625,
+        74.15019989013672,
+        74.21044158935547,
+        74.26187133789062,
+        74.30471801757812,
+        74.3754653930664,
+        74.40867614746094,
+        74.45314025878906,
+        74.51289367675781,
+        74.56121063232422,
+        74.57293701171875,
+        74.6236801147461,
+        74.63509368896484,
+        74.6853256225586,
+        74.70230102539062,
+        74.71884155273438,
+        74.74342346191406,
+        74.77555847167969,
+        74.81438446044922,
+        74.833740234375,
+        74.84162902832031,
+        74.84733581542969,
+        74.84789276123047,
+        74.86721801757812,
+        74.87125396728516,
+        74.89527893066406
+      ],
+      "q90": [
+        71.00708770751953,
+        71.1296157836914,
+        71.20818328857422,
+        71.32585144042969,
+        71.41329193115234,
+        71.51461791992188,
+        71.60225677490234,
+        71.7013931274414,
+        71.82121276855469,
+        71.90270233154297,
+        72.00688171386719,
+        72.11168670654297,
+        72.21734619140625,
+        72.3018569946289,
+        72.41621398925781,
+        72.49966430664062,
+        72.5970458984375,
+        72.69401550292969,
+        72.77519226074219,
+        72.86820983886719,
+        72.9778823852539,
+        73.06950378417969,
+        73.13739013671875,
+        73.2353744506836,
+        73.33191680908203,
+        73.41264343261719,
+        73.50530242919922,
+        73.58642578125,
+        73.69014739990234,
+        73.76396179199219,
+        73.86421203613281,
+        73.94625091552734,
+        74.0330810546875,
+        74.12187194824219,
+        74.19445037841797,
+        74.2857666015625,
+        74.36847686767578,
+        74.45405578613281,
+        74.51962280273438,
+        74.61927032470703,
+        74.71204376220703,
+        74.77796173095703,
+        74.88641357421875,
+        74.95165252685547,
+        75.03447723388672,
+        75.09562683105469,
+        75.17686462402344,
+        75.243408203125,
+        75.31118774414062,
+        75.38813018798828,
+        75.44347381591797,
+        75.51143646240234,
+        75.5875015258789,
+        75.6769027709961,
+        75.74202728271484,
+        75.83289337158203,
+        75.91463470458984,
+        75.97657012939453,
+        76.03428649902344,
+        76.1139144897461,
+        76.18560028076172,
+        76.23492431640625,
+        76.30398559570312,
+        76.38826751708984
+      ],
+      "elapsed_s": 0.07410291599808261,
+      "model_id": "google/timesfm-3.0-pytorch",
+      "revision": "43046b85ec22d584a13f8098c2ed39c889e129c2",
+      "valid": true,
+      "validity_reason": "valid",
+      "context_end_mono": 52893.653702833,
+      "context_last_value": 70.89149233888712,
+      "forecast_origin_data_revision": 445
+    },
+    "predictive_wake": {
+      "type": "result",
+      "request_id": "frontier-claude-fused-20261102-a:predictive_wake",
+      "monotonic": 52901.224173666,
+      "text": "**Status report**\n\n- **Elapsed time:** 51.694 s since the run started (monotonic clock).\n- **Freshness:** The latest measurement (71.94879786384831) is fresh. It was taken 0.025 s ago, well inside the 1.000 s limit.\n- **Current mode:** **ALARM**. It switched to ALARM about 27.7 s ago.\n\nBoth deadlines, `probe` and `urgent`, have expired and their events were delivered. A `source_paused` event (3 s duration) came in about 17.0 s ago. No resume event has been observed, so I can't confirm the source has resumed. Fresh data is arriving, but that doesn't prove a resume happened.",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1676,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3972,
+      "output_tokens": 371,
+      "finish_reason": "end_turn",
+      "elapsed_s": 6.466655374999391,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.021294800000000003,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 80,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": false,
+      "snapshot_elapsed_s": 51.694321292001405,
+      "answer_as_of_mono": 52894.757122958,
+      "answer_as_of_utc": "2026-11-02T17:33:12.158Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-fused-20261102-a",
+        "revision": 7,
+        "data_revision": 515,
+        "wall_utc": "2026-11-02T17:33:18.636Z",
+        "start_wall_utc": "2026-11-02T17:32:20.464Z",
+        "elapsed_s": 58.171845333999954,
+        "now_mono": 52901.234647,
+        "observation": {
+          "value": 75.30246944532408,
+          "age_s": 0.080264416996215,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 55.17153554199467,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 33.94440154199401,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 55.16719962500065,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 34.19441345899395,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 33.93344066699501,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 23.509569875001034,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 23.509569875001034
+      }
+    }
+  },
+  "race": {
+    "first_token_mono": 52867.03350175,
+    "alarm_mono": 52867.040241458,
+    "urgent_due_mono": 52867.290245458
+  },
+  "deadlines": [
+    {
+      "run_id": "frontier-claude-fused-20261102-a",
+      "deadline_id": "probe",
+      "scheduled_mono": 52846.063111458,
+      "fired_at_mono": 52846.067447375,
+      "lateness_s": 0.004335916994023137,
+      "wall_utc": "2026-11-02T17:32:23.468Z",
+      "revision": 3
+    },
+    {
+      "run_id": "frontier-claude-fused-20261102-a",
+      "deadline_id": "urgent",
+      "scheduled_mono": 52867.290245458,
+      "fired_at_mono": 52867.301206333,
+      "lateness_s": 0.010960874999000225,
+      "wall_utc": "2026-11-02T17:32:44.702Z",
+      "revision": 6
+    }
+  ],
+  "samples_ingested": 515
+}

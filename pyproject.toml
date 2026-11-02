@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "temporal-bridge"
+version = "0.1.0"
+description = "Reproducible frozen TSFM and LLM temporal-evidence experiment"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy==2.5.4",
+  "mlx==0.32.4",
+  "mlx-lm==0.32.2",
+  "huggingface-hub==2.3.0",
+  "safetensors==0.8.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0", "ruff==0.17.3"]
+
+[project.scripts]
+temporal-bridge = "temporal_bridge.experiment:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/temporal_bridge"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100

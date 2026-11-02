@@ -1,0 +1,20 @@
+[
+  {
+    "case_id": "heldout-synthetic-000-original",
+    "prompt": "Temporal evidence:\nNow=0 hours; sample_interval=1 hours. Negative time=past. Observed knots time:value; interpolate linearly.\n-127:-0.004664 -123:0.06683 -118:0.0549 -114:0.05667 -109:-0.06531 -105:-0.0914 -101:-0.02198 -96:0.03121 -92:-1.192 -88:-2.912 -83:-0.8927 -79:-0.01519 -74:-0.1037 -70:-0.09856 -66:0.009206 -61:0.05939 -57:0.0694 -53:0.06389 -48:-0.03868 -44:-0.08282 -39:-0.08174 -35:-0.01443 -31:0.0341 -26:1.927 -22:2.653 -18:1.075 -13:-0.03163 -9:-0.09204 -4:-0.02085 0:0.03756\nHistory max interpolation error<=0.559.\n\nQuestion: Which occurs first in the observed context: the sample with the highest value or the sample with the lowest value? If tied, use the earliest sample.\nA) lowest sample first\nB) no clear extremes\nC) same time\nD) highest sample first\nGive the option and a short explanation. Distinguish observations from predictions.",
+    "correct_option": "A",
+    "correct_text": "lowest sample first",
+    "text": "A) lowest sample first\n\n**Explanation:**  \nThe observed values include both the highest and lowest samples. The lowest value is -2.912 at time -88 (past), and the highest value is 2.653 at time -22 (past). Since -88 is earlier than -22, the lowest sample occurs first. The question asks for the order in the observed context, not predictions.",
+    "input_tokens": 458,
+    "elapsed_s": 1.240917333001562
+  },
+  {
+    "case_id": "heldout-etth1-010361",
+    "prompt": "Temporal evidence:\nNow=0 hours; sample_interval=1 hours. Negative time=past. Observed knots time:value; interpolate linearly.\n-127:15.05 -113:16.04 -99:15.48 -85:15.97 -71:14.91 -56:17.31 -42:13.79 -28:14.14 -14:15.41 0:11.89\nHistory max interpolation error<=4.59.\nProjected knots hours:lower/point/upper (model marginal 10/50/90 quantiles); not path probabilities.\n1:11.18/12.11/13.25 6:10.56/12.88/15.53 10:11.05/14.19/17.06 15:11.14/14.81/18.12 19:10.42/13.66/16.9 24:10.12/13.25/16.27\nForecast max interpolation error<=0.405; projections may be wrong.\n\nQuestion: Which six-hour block of the next 24 hourly measurements contains the highest value? Q1 is hours 1\u20136; Q2 is hours 7\u201312; Q3 is hours 13\u201318; Q4 is hours 19\u201324. If values tie, use the earliest hour.\nA) Q4\nB) Q1\nC) Q3\nD) Q2\nGive the option and a short explanation. Distinguish observations from predictions.",
+    "correct_option": "A",
+    "correct_text": "Q4",
+    "text": "A) Q4\n\nExplanation: The highest value among the projected knots is in Q4 (hours 19\u201324) with a projected value of 16.9. This is a prediction, while the observed values (e.g., 0:11.89) are historical data points. The highest observed value is 15.41 at hour -14 (past), but the highest projected value in the next 24 hours is in Q4.",
+    "input_tokens": 429,
+    "elapsed_s": 1.1390112500012037
+  }
+]

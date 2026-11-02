@@ -1,0 +1,23 @@
+{
+  "arguments": {
+    "mode": "watch",
+    "run_dir": "artifacts/live-watch-20261102-a",
+    "model": "/Users/rachitt/labs/qwen3-4b-abliterated-mlx/models/qwen3-4b-abliterated-4bit",
+    "clock_only": true,
+    "events": "/private/var/folders/ln/f9ymyyh97rx6k6pf8zyj615h0000gn/T/pytest-of-rachitt/pytest-49/test_live_file_events_and_dead0/events.jsonl",
+    "seconds": 6.0,
+    "deadline_seconds": null,
+    "change_threshold": 1.0
+  },
+  "source_sha256": {
+    "/Users/rachitt/labs/temporal-bridge/realtime.py": "6ded9133b50568cef5ec9a62e88a04fbdf057b2d20166d7833979afd68ade0bd",
+    "src/temporal_bridge/live_worker.py": "1699fb16a9b2be839886cca6b5fd77e532f434a8b580097f885242bc22b0ca06",
+    "src/temporal_bridge/benchmark.py": "ad35de9719ea05d72fe101166cfae8886a08b7071c120618ba12f7d4a0e67a17",
+    "src/temporal_bridge/__init__.py": "c4f910ed2c3242dda9460b255cc1334d0d9ae02a2986e64fd04c5dc9b503f4fb",
+    "src/temporal_bridge/core.py": "d63fe5e4e6977d65d2c0b462e6eeee8f66acfc92a017ae9abb35e5ba4ce1fe28",
+    "src/temporal_bridge/experiment.py": "32b6104d5e2361c0f72e18a718b784ccb0132c8ee1c2a6f503427cb3e4a01139",
+    "src/temporal_bridge/realtime_state.py": "e4ddfa69989cf2405ebcb58b1ed88adf5cb03894425b023ddffc9c08f04bc08f",
+    "src/temporal_bridge/backends.py": "d32693eaa479a9da85ca415eea01c54aeb14f79960ad7ae535dca6151d3d22ab",
+    "src/temporal_bridge/cells.py": "7f4038141319851e6cb8406977e359efc76241669c0bee5e5f5b0dee961a9b35"
+  }
+}

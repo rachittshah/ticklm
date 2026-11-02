@@ -1,0 +1,610 @@
+{
+  "run_id": "live-clock-20261102-c",
+  "mode": "clock_only",
+  "checks": {
+    "actual_wait_before_clock_query": true,
+    "fresh_clock_answer_expired": true,
+    "model_reports_elapsed_seconds": true,
+    "event_arrived_during_real_generation": true,
+    "urgent_deadline_fired_during_generation": true,
+    "stale_inflight_answer_rejected": true,
+    "refresh_answer_uses_new_alarm": true,
+    "clock_expires_without_semantic_event": true,
+    "observation_really_older_than_one_second": true,
+    "model_identifies_stale_observation": true
+  },
+  "all_checks_passed": true,
+  "elapsed_wall_s": 8.84438670900272,
+  "samples_ingested": 64,
+  "llm_calls": 6,
+  "frozen_context_control": {
+    "type": "result",
+    "request_id": "live-clock-20261102-c:frozen_clock",
+    "monotonic": 48644.945650583,
+    "text": "PENDING",
+    "input_tokens": 179,
+    "output_tokens": 3,
+    "finish_reason": "stop",
+    "elapsed_s": 0.23350462500093272,
+    "valid": true,
+    "validity_reason": "valid",
+    "control_only": true,
+    "snapshot_elapsed_s": 4.006924417000846,
+    "answer_as_of_mono": 48644.693711333,
+    "live_publication_clock": {
+      "run_id": "live-clock-20261102-c",
+      "revision": 3,
+      "data_revision": 41,
+      "wall_utc": "2026-11-02T16:22:22.303Z",
+      "start_wall_utc": "2026-11-02T16:22:18.042Z",
+      "elapsed_s": 4.261848417001602,
+      "now_mono": 48644.948635333,
+      "observation": {
+        "value": 53.69040648044891,
+        "age_s": 0.00014929199824109674,
+        "freshness": "FRESH",
+        "freshness_limit_s": 1.0
+      },
+      "deadlines": [
+        {
+          "id": "probe",
+          "remaining_s": 0.0,
+          "overdue_s": 1.2615760830012732,
+          "status": "fired",
+          "expiry_status": "EXPIRED",
+          "event_status": "delivered"
+        }
+      ],
+      "events": [
+        {
+          "name": "mode",
+          "age_s": 4.261585792002734,
+          "revision": 1,
+          "payload": {
+            "value": "NORMAL"
+          }
+        },
+        {
+          "name": "deadline_due",
+          "age_s": 1.2536890830015182,
+          "revision": 3,
+          "payload": {
+            "deadline_id": "probe"
+          }
+        }
+      ],
+      "last_reason": "deadline_due",
+      "time_since_last_reason_s": 1.2536890830015182
+    }
+  },
+  "fresh_context_response": {
+    "type": "result",
+    "request_id": "live-clock-20261102-c:fresh_clock",
+    "monotonic": 48645.183160333,
+    "text": "EXPIRED",
+    "input_tokens": 247,
+    "output_tokens": 4,
+    "finish_reason": "stop",
+    "elapsed_s": 0.23373587500100257,
+    "valid": true,
+    "validity_reason": "valid",
+    "control_only": false,
+    "snapshot_elapsed_s": 4.261942167002417,
+    "answer_as_of_mono": 48644.948729083,
+    "live_publication_clock": {
+      "run_id": "live-clock-20261102-c",
+      "revision": 3,
+      "data_revision": 43,
+      "wall_utc": "2026-11-02T16:22:22.547Z",
+      "start_wall_utc": "2026-11-02T16:22:18.042Z",
+      "elapsed_s": 4.505717250001908,
+      "now_mono": 48645.192504166,
+      "observation": {
+        "value": 53.81581048287309,
+        "age_s": 0.033488041000964586,
+        "freshness": "FRESH",
+        "freshness_limit_s": 1.0
+      },
+      "deadlines": [
+        {
+          "id": "probe",
+          "remaining_s": 0.0,
+          "overdue_s": 1.5054449160015793,
+          "status": "fired",
+          "expiry_status": "EXPIRED",
+          "event_status": "delivered"
+        }
+      ],
+      "events": [
+        {
+          "name": "mode",
+          "age_s": 4.50545462500304,
+          "revision": 1,
+          "payload": {
+            "value": "NORMAL"
+          }
+        },
+        {
+          "name": "deadline_due",
+          "age_s": 1.4975579160018242,
+          "revision": 3,
+          "payload": {
+            "deadline_id": "probe"
+          }
+        }
+      ],
+      "last_reason": "deadline_due",
+      "time_since_last_reason_s": 1.4975579160018242
+    }
+  },
+  "results": {
+    "frozen_clock": {
+      "type": "result",
+      "request_id": "live-clock-20261102-c:frozen_clock",
+      "monotonic": 48644.945650583,
+      "text": "PENDING",
+      "input_tokens": 179,
+      "output_tokens": 3,
+      "finish_reason": "stop",
+      "elapsed_s": 0.23350462500093272,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": true,
+      "snapshot_elapsed_s": 4.006924417000846,
+      "answer_as_of_mono": 48644.693711333,
+      "live_publication_clock": {
+        "run_id": "live-clock-20261102-c",
+        "revision": 3,
+        "data_revision": 41,
+        "wall_utc": "2026-11-02T16:22:22.303Z",
+        "start_wall_utc": "2026-11-02T16:22:18.042Z",
+        "elapsed_s": 4.261848417001602,
+        "now_mono": 48644.948635333,
+        "observation": {
+          "value": 53.69040648044891,
+          "age_s": 0.00014929199824109674,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 1.2615760830012732,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 4.261585792002734,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.2536890830015182,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.2536890830015182
+      }
+    },
+    "fresh_clock": {
+      "type": "result",
+      "request_id": "live-clock-20261102-c:fresh_clock",
+      "monotonic": 48645.183160333,
+      "text": "EXPIRED",
+      "input_tokens": 247,
+      "output_tokens": 4,
+      "finish_reason": "stop",
+      "elapsed_s": 0.23373587500100257,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 4.261942167002417,
+      "answer_as_of_mono": 48644.948729083,
+      "live_publication_clock": {
+        "run_id": "live-clock-20261102-c",
+        "revision": 3,
+        "data_revision": 43,
+        "wall_utc": "2026-11-02T16:22:22.547Z",
+        "start_wall_utc": "2026-11-02T16:22:18.042Z",
+        "elapsed_s": 4.505717250001908,
+        "now_mono": 48645.192504166,
+        "observation": {
+          "value": 53.81581048287309,
+          "age_s": 0.033488041000964586,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 1.5054449160015793,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 4.50545462500304,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.4975579160018242,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.4975579160018242
+      }
+    },
+    "elapsed_number": {
+      "type": "result",
+      "request_id": "live-clock-20261102-c:elapsed_number",
+      "monotonic": 48645.446712166,
+      "text": "4.506",
+      "input_tokens": 250,
+      "output_tokens": 6,
+      "finish_reason": "stop",
+      "elapsed_s": 0.2532258749997709,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 4.5058595840018825,
+      "answer_as_of_mono": 48645.1926465,
+      "live_publication_clock": {
+        "run_id": "live-clock-20261102-c",
+        "revision": 3,
+        "data_revision": 45,
+        "wall_utc": "2026-11-02T16:22:22.803Z",
+        "start_wall_utc": "2026-11-02T16:22:18.042Z",
+        "elapsed_s": 4.761253333999775,
+        "now_mono": 48645.44804025,
+        "observation": {
+          "value": 53.93388599529211,
+          "age_s": 0.07817699999577599,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 1.7609809999994468,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 4.760990709000907,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.7530939999996917,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.7530939999996917
+      }
+    },
+    "race": {
+      "type": "result",
+      "request_id": "live-clock-20261102-c:race",
+      "monotonic": 48647.206686416,
+      "text": "1. The current mode is NORMAL, as indicated by the recent event mode observed 4.761 seconds ago.  \n2. The NORMAL mode implies that the system is operating within expected parameters and no urgent action is required.  \n3. The latest measurement value is 53.93388599529211, which was recorded 0.078 seconds ago.  \n4. The measurement is considered FRESH, as it is within the 1.000-second freshness limit.  \n5. The deadline probe was EXPIRED, with its scheduled time passing 1.761 seconds ago.  \n6. The deadline event was delivered, indicating the system has acknowledged the deadline.  \n7. The recent event deadline_due was observed 1.753 seconds ago, with a payload of \"probe\".  \n8. The system is currently monitoring the measurement value for any deviations from normal operation.  \n9.",
+      "input_tokens": 252,
+      "output_tokens": 200,
+      "finish_reason": "length",
+      "elapsed_s": 1.757663042000786,
+      "valid": false,
+      "validity_reason": "state_changed",
+      "control_only": false,
+      "snapshot_elapsed_s": 4.761372917004337,
+      "answer_as_of_mono": 48645.448159833,
+      "live_publication_clock": {
+        "run_id": "live-clock-20261102-c",
+        "revision": 6,
+        "data_revision": 61,
+        "wall_utc": "2026-11-02T16:22:24.567Z",
+        "start_wall_utc": "2026-11-02T16:22:18.042Z",
+        "elapsed_s": 6.525022667003213,
+        "now_mono": 48647.211809583,
+        "observation": {
+          "value": 62.607217665274774,
+          "age_s": 0.08717741700093029,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 3.524750333002885,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 1.3033066670031985,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 6.5247600420043455,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 3.51686333300313,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 1.553315625002142,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.2997090420030872,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.2997090420030872
+      }
+    },
+    "refresh": {
+      "type": "result",
+      "request_id": "live-clock-20261102-c:refresh",
+      "monotonic": 48647.536478,
+      "text": "ALARM; EXPIRED",
+      "input_tokens": 332,
+      "output_tokens": 7,
+      "finish_reason": "stop",
+      "elapsed_s": 0.3237888750009006,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 6.525131959002465,
+      "answer_as_of_mono": 48647.211918875,
+      "live_publication_clock": {
+        "run_id": "live-clock-20261102-c",
+        "revision": 6,
+        "data_revision": 64,
+        "wall_utc": "2026-11-02T16:22:24.899Z",
+        "start_wall_utc": "2026-11-02T16:22:18.042Z",
+        "elapsed_s": 6.85753525000473,
+        "now_mono": 48647.544322166,
+        "observation": {
+          "value": 62.670087463029866,
+          "age_s": 0.0889269580002292,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 3.8572629160044016,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 1.6358192500047153,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 6.857272625005862,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 3.8493759160046466,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 1.8858282080036588,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.632221625004604,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.632221625004604
+      }
+    },
+    "freshness": {
+      "type": "result",
+      "request_id": "live-clock-20261102-c:freshness",
+      "monotonic": 48649.527785458,
+      "text": "STALE",
+      "input_tokens": 327,
+      "output_tokens": 3,
+      "finish_reason": "stop",
+      "elapsed_s": 0.37132800000108546,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 8.467375125001126,
+      "answer_as_of_mono": 48649.154162041,
+      "live_publication_clock": {
+        "run_id": "live-clock-20261102-c",
+        "revision": 7,
+        "data_revision": 64,
+        "wall_utc": "2026-11-02T16:22:26.886Z",
+        "start_wall_utc": "2026-11-02T16:22:18.042Z",
+        "elapsed_s": 8.844116209002095,
+        "now_mono": 48649.530903125,
+        "observation": {
+          "value": 62.670087463029866,
+          "age_s": 2.0755079169975943,
+          "freshness": "STALE",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 5.843843875001767,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 3.6224002090020804,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 5.835956875002012,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 3.872409167001024,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 3.618802584001969,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 1.986451083997963,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 1.986451083997963
+      }
+    }
+  },
+  "race": {
+    "first_token_mono": 48645.654784375,
+    "alarm_mono": 48645.658499958,
+    "urgent_due_mono": 48645.908502916
+  },
+  "deadlines": [
+    {
+      "run_id": "live-clock-20261102-c",
+      "deadline_id": "probe",
+      "scheduled_mono": 48643.68705925,
+      "fired_at_mono": 48643.69494625,
+      "lateness_s": 0.007886999999755062,
+      "wall_utc": "2026-11-02T16:22:21.050Z",
+      "revision": 3
+    },
+    {
+      "run_id": "live-clock-20261102-c",
+      "deadline_id": "urgent",
+      "scheduled_mono": 48645.908502916,
+      "fired_at_mono": 48645.912100541,
+      "lateness_s": 0.003597625000111293,
+      "wall_utc": "2026-11-02T16:22:23.267Z",
+      "revision": 6
+    }
+  ],
+  "predictive_wake": null,
+  "loop_interval_p50_ms": 11.093624998466112,
+  "loop_interval_p95_ms": 11.459957798069809,
+  "loop_interval_max_ms": 12.815124995540828,
+  "limits": [
+    "A scripted live trial, not a benchmark of general temporal cognition.",
+    "Sensor values are simulated at real wall time; they are not physical-device readings.",
+    "Ordinary samples update data_revision; semantic events and expiry govern output invalidation.",
+    "Clock and deadline behavior comes from runtime; TimesFM only supplies a wake-time hint.",
+    "No hard real-time scheduling guarantee; timings reflect this observed run."
+  ]
+}

@@ -1,0 +1,19 @@
+Current UTC wall-clock reading: 2026-11-02T16:32:43.224Z.
+Run elapsed time: 0.001 seconds since run start, measured with a monotonic clock.
+Latest measurement: unavailable. Freshness: UNKNOWN.
+No deadlines are scheduled.
+No recent events are recorded.
+Current UTC wall-clock reading: 2026-11-02T16:32:43.688Z.
+Run elapsed time: 0.465 seconds since run start, measured with a monotonic clock.
+Latest measurement value: 42.5. The latest measurement was observed 0.206 seconds ago. Freshness: FRESH (limit 1.000 seconds).
+Deadline file-deadline: PENDING; 0.044 seconds remain. The deadline event was not yet delivered.
+Recent event door was observed 0.206 seconds ago; payload={"open":true}.
+{"name": "watch-0", "published": false, "reason": "state_changed"}
+Current UTC wall-clock reading: 2026-11-02T16:32:44.459Z.
+Run elapsed time: 1.236 seconds since run start, measured with a monotonic clock.
+Latest measurement value: 42.5. The latest measurement was observed 0.978 seconds ago. Freshness: FRESH (limit 1.000 seconds).
+Deadline file-deadline: EXPIRED; its scheduled time passed 0.728 seconds ago. The deadline event was delivered.
+Recent event door was observed 0.978 seconds ago; payload={"open":true}.
+Recent event deadline_due was observed 0.720 seconds ago; payload={"deadline_id":"file-deadline"}.
+{"name": "watch-1", "published": false, "reason": "deadline_crossed"}
+{"name": "watch-2", "published": true, "reason": "valid", "text": "Changed: Door open status.  \nElapsed time: 1.236 seconds.  \nObservation age: 0.978 seconds.  \nDeadline: File-deadline expired 0.728 seconds ago.", "narrative_as_of_utc": "2026-11-02T16:32:44.459Z", "live_clock": {"run_id": "live-watch-20261102-b", "revision": 3, "data_revision": 1, "wall_utc": "2026-11-02T16:32:45.076Z", "start_wall_utc": "2026-11-02T16:32:43.223Z", "elapsed_s": 1.853435791002994, "now_mono": 49267.705972916, "observation": {"value": 42.5, "age_s": 1.5951375410004403, "freshness": "STALE", "freshness_limit_s": 1.0}, "deadlines": [{"id": "file-deadline", "remaining_s": 0.0, "overdue_s": 1.3449829160017543, "status": "fired", "expiry_status": "EXPIRED", "event_status": "delivered"}], "events": [{"name": "door", "age_s": 1.5950450410018675, "revision": 1, "payload": {"open": true}}, {"name": "deadline_due", "age_s": 1.3372501660051057, "revision": 3, "payload": {"deadline_id": "file-deadline"}}], "last_reason": "deadline_due", "time_since_last_reason_s": 1.3372501660051057}}

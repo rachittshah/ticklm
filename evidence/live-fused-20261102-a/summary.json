@@ -1,0 +1,918 @@
+{
+  "run_id": "live-fused-20261102-a",
+  "mode": "clock_plus_tsfm",
+  "checks": {
+    "actual_wait_before_clock_query": true,
+    "fresh_clock_answer_expired": true,
+    "model_reports_elapsed_seconds": true,
+    "event_arrived_during_real_generation": true,
+    "urgent_deadline_fired_during_generation": true,
+    "stale_inflight_answer_rejected": true,
+    "refresh_answer_uses_new_alarm": true,
+    "clock_expires_without_semantic_event": true,
+    "observation_really_older_than_one_second": true,
+    "model_identifies_stale_observation": true,
+    "tsfm_received_128_live_samples": true,
+    "predictive_wake_executed": true
+  },
+  "all_checks_passed": true,
+  "elapsed_wall_s": 24.709366625000257,
+  "samples_ingested": 203,
+  "llm_calls": 7,
+  "frozen_context_control": {
+    "type": "result",
+    "request_id": "live-fused-20261102-a:frozen_clock",
+    "monotonic": 48759.244505625,
+    "text": "PENDING",
+    "input_tokens": 179,
+    "output_tokens": 3,
+    "finish_reason": "stop",
+    "elapsed_s": 0.26395524999679765,
+    "valid": true,
+    "validity_reason": "valid",
+    "control_only": true,
+    "snapshot_elapsed_s": 4.002520957998058,
+    "answer_as_of_mono": 48758.972252166,
+    "live_publication_clock": {
+      "run_id": "live-fused-20261102-a",
+      "revision": 3,
+      "data_revision": 41,
+      "wall_utc": "2026-11-02T16:24:16.611Z",
+      "start_wall_utc": "2026-11-02T16:24:12.325Z",
+      "elapsed_s": 4.285990207994473,
+      "now_mono": 48759.255721416,
+      "observation": {
+        "value": 53.69773375717554,
+        "age_s": 0.012314415995206218,
+        "freshness": "FRESH",
+        "freshness_limit_s": 1.0
+      },
+      "deadlines": [
+        {
+          "id": "probe",
+          "remaining_s": 0.0,
+          "overdue_s": 1.28566729099839,
+          "status": "fired",
+          "expiry_status": "EXPIRED",
+          "event_status": "delivered"
+        }
+      ],
+      "events": [
+        {
+          "name": "mode",
+          "age_s": 4.285676499996043,
+          "revision": 1,
+          "payload": {
+            "value": "NORMAL"
+          }
+        },
+        {
+          "name": "deadline_due",
+          "age_s": 1.2773844999974244,
+          "revision": 3,
+          "payload": {
+            "deadline_id": "probe"
+          }
+        }
+      ],
+      "last_reason": "deadline_due",
+      "time_since_last_reason_s": 1.2773844999974244
+    }
+  },
+  "fresh_context_response": {
+    "type": "result",
+    "request_id": "live-fused-20261102-a:fresh_clock",
+    "monotonic": 48759.486380625,
+    "text": "EXPIRED",
+    "input_tokens": 247,
+    "output_tokens": 4,
+    "finish_reason": "stop",
+    "elapsed_s": 0.22977691700361902,
+    "valid": true,
+    "validity_reason": "valid",
+    "control_only": false,
+    "snapshot_elapsed_s": 4.286106957995798,
+    "answer_as_of_mono": 48759.255838166,
+    "live_publication_clock": {
+      "run_id": "live-fused-20261102-a",
+      "revision": 3,
+      "data_revision": 43,
+      "wall_utc": "2026-11-02T16:24:16.852Z",
+      "start_wall_utc": "2026-11-02T16:24:12.325Z",
+      "elapsed_s": 4.527412082999945,
+      "now_mono": 48759.497143291,
+      "observation": {
+        "value": 53.82058089199856,
+        "age_s": 0.04691875000571599,
+        "freshness": "FRESH",
+        "freshness_limit_s": 1.0
+      },
+      "deadlines": [
+        {
+          "id": "probe",
+          "remaining_s": 0.0,
+          "overdue_s": 1.5270891660038615,
+          "status": "fired",
+          "expiry_status": "EXPIRED",
+          "event_status": "delivered"
+        }
+      ],
+      "events": [
+        {
+          "name": "mode",
+          "age_s": 4.527098375001515,
+          "revision": 1,
+          "payload": {
+            "value": "NORMAL"
+          }
+        },
+        {
+          "name": "deadline_due",
+          "age_s": 1.518806375002896,
+          "revision": 3,
+          "payload": {
+            "deadline_id": "probe"
+          }
+        }
+      ],
+      "last_reason": "deadline_due",
+      "time_since_last_reason_s": 1.518806375002896
+    }
+  },
+  "results": {
+    "frozen_clock": {
+      "type": "result",
+      "request_id": "live-fused-20261102-a:frozen_clock",
+      "monotonic": 48759.244505625,
+      "text": "PENDING",
+      "input_tokens": 179,
+      "output_tokens": 3,
+      "finish_reason": "stop",
+      "elapsed_s": 0.26395524999679765,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": true,
+      "snapshot_elapsed_s": 4.002520957998058,
+      "answer_as_of_mono": 48758.972252166,
+      "live_publication_clock": {
+        "run_id": "live-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 41,
+        "wall_utc": "2026-11-02T16:24:16.611Z",
+        "start_wall_utc": "2026-11-02T16:24:12.325Z",
+        "elapsed_s": 4.285990207994473,
+        "now_mono": 48759.255721416,
+        "observation": {
+          "value": 53.69773375717554,
+          "age_s": 0.012314415995206218,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 1.28566729099839,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 4.285676499996043,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.2773844999974244,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.2773844999974244
+      }
+    },
+    "fresh_clock": {
+      "type": "result",
+      "request_id": "live-fused-20261102-a:fresh_clock",
+      "monotonic": 48759.486380625,
+      "text": "EXPIRED",
+      "input_tokens": 247,
+      "output_tokens": 4,
+      "finish_reason": "stop",
+      "elapsed_s": 0.22977691700361902,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 4.286106957995798,
+      "answer_as_of_mono": 48759.255838166,
+      "live_publication_clock": {
+        "run_id": "live-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 43,
+        "wall_utc": "2026-11-02T16:24:16.852Z",
+        "start_wall_utc": "2026-11-02T16:24:12.325Z",
+        "elapsed_s": 4.527412082999945,
+        "now_mono": 48759.497143291,
+        "observation": {
+          "value": 53.82058089199856,
+          "age_s": 0.04691875000571599,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 1.5270891660038615,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 4.527098375001515,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.518806375002896,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.518806375002896
+      }
+    },
+    "elapsed_number": {
+      "type": "result",
+      "request_id": "live-fused-20261102-a:elapsed_number",
+      "monotonic": 48759.743909666,
+      "text": "4.527",
+      "input_tokens": 250,
+      "output_tokens": 6,
+      "finish_reason": "stop",
+      "elapsed_s": 0.24616450000030454,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 4.527487667000969,
+      "answer_as_of_mono": 48759.497218875,
+      "live_publication_clock": {
+        "run_id": "live-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 45,
+        "wall_utc": "2026-11-02T16:24:17.104Z",
+        "start_wall_utc": "2026-11-02T16:24:12.325Z",
+        "elapsed_s": 4.77972108299582,
+        "now_mono": 48759.749452291,
+        "observation": {
+          "value": 53.94029769498571,
+          "age_s": 0.08485225000185892,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 1.779398165999737,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 4.77940737499739,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.7711153749987716,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.7711153749987716
+      }
+    },
+    "race": {
+      "type": "result",
+      "request_id": "live-fused-20261102-a:race",
+      "monotonic": 48761.51786275,
+      "text": "1. The current mode is NORMAL, as indicated by the recent event mode observed 4.780 seconds ago.  \n2. The system is operating within expected parameters, with no anomalies detected in the latest measurement.  \n3. The latest measurement value is 53.94029769498571, which is considered FRESH within the 1.000-second limit.  \n4. The freshness of the data is confirmed, as the latest measurement was observed 0.085 seconds ago.  \n5. The deadline probe has expired, with its scheduled time passing 1.779 seconds ago.  \n6. The deadline event was delivered, indicating the system has acknowledged the deadline.  \n7. The recent event mode was observed 4.780 seconds ago, confirming the system is in a stable state.  \n8. The system is monitoring the latest measurement value for any deviations from the expected range.",
+      "input_tokens": 252,
+      "output_tokens": 200,
+      "finish_reason": "length",
+      "elapsed_s": 1.7677163330008625,
+      "valid": false,
+      "validity_reason": "state_changed",
+      "control_only": false,
+      "snapshot_elapsed_s": 4.77981779199763,
+      "answer_as_of_mono": 48759.749549,
+      "live_publication_clock": {
+        "run_id": "live-fused-20261102-a",
+        "revision": 6,
+        "data_revision": 62,
+        "wall_utc": "2026-11-02T16:24:18.884Z",
+        "start_wall_utc": "2026-11-02T16:24:12.325Z",
+        "elapsed_s": 6.55983620799816,
+        "now_mono": 48761.529567416,
+        "observation": {
+          "value": 62.62293645801582,
+          "age_s": 0.04858108299958985,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 3.5595132910020766,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 1.3152669580013026,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 6.55952249999973,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 3.551230500001111,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 1.565278957998089,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.3097716659976868,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.3097716659976868
+      }
+    },
+    "refresh": {
+      "type": "result",
+      "request_id": "live-fused-20261102-a:refresh",
+      "monotonic": 48761.855257625,
+      "text": "ALARM; EXPIRED",
+      "input_tokens": 331,
+      "output_tokens": 7,
+      "finish_reason": "stop",
+      "elapsed_s": 0.3238952079991577,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 6.559925417001068,
+      "answer_as_of_mono": 48761.529656625,
+      "live_publication_clock": {
+        "run_id": "live-fused-20261102-a",
+        "revision": 6,
+        "data_revision": 65,
+        "wall_utc": "2026-11-02T16:24:19.221Z",
+        "start_wall_utc": "2026-11-02T16:24:12.325Z",
+        "elapsed_s": 6.896037416998297,
+        "now_mono": 48761.865768625,
+        "observation": {
+          "value": 62.68040197412147,
+          "age_s": 0.05998366700077895,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 3.8957145000022138,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 1.6514681670014397,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 6.895723708999867,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 3.8874317090012482,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 1.9014801669982262,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 1.645972874997824,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 1.645972874997824
+      }
+    },
+    "freshness": {
+      "type": "result",
+      "request_id": "live-fused-20261102-a:freshness",
+      "monotonic": 48763.853796375,
+      "text": "STALE",
+      "input_tokens": 326,
+      "output_tokens": 3,
+      "finish_reason": "stop",
+      "elapsed_s": 0.37859062499774154,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 8.504071499999554,
+      "answer_as_of_mono": 48763.473802708,
+      "live_publication_clock": {
+        "run_id": "live-fused-20261102-a",
+        "revision": 7,
+        "data_revision": 65,
+        "wall_utc": "2026-11-02T16:24:21.210Z",
+        "start_wall_utc": "2026-11-02T16:24:12.325Z",
+        "elapsed_s": 8.885100916995725,
+        "now_mono": 48763.854832125,
+        "observation": {
+          "value": 62.68040197412147,
+          "age_s": 2.049047166998207,
+          "freshness": "STALE",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 5.884777999999642,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 3.640531666998868,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 5.876495208998676,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 3.8905436669956543,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 3.635036374995252,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 1.9889041249989532,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 1.9889041249989532
+      }
+    },
+    "forecast": {
+      "type": "result",
+      "request_id": "live-fused-20261102-a:forecast",
+      "monotonic": 48777.964657333,
+      "point": [
+        62.1780891418457,
+        62.2794075012207,
+        62.369117736816406,
+        62.4660758972168,
+        62.553680419921875,
+        62.638648986816406,
+        62.73171615600586,
+        62.835044860839844,
+        62.932373046875,
+        63.023685455322266,
+        63.126739501953125,
+        63.21449661254883,
+        63.31671905517578,
+        63.40319061279297,
+        63.50675582885742,
+        63.606956481933594,
+        63.706363677978516,
+        63.79890060424805,
+        63.896705627441406,
+        63.9959831237793,
+        64.10050964355469,
+        64.19551849365234,
+        64.28718566894531,
+        64.3882827758789,
+        64.4893798828125,
+        64.58224487304688,
+        64.68311309814453,
+        64.77301788330078,
+        64.86466217041016,
+        64.9568862915039,
+        65.06309509277344,
+        65.1545639038086,
+        65.25135803222656,
+        65.34162902832031,
+        65.43340301513672,
+        65.53103637695312,
+        65.6167221069336,
+        65.71138763427734,
+        65.80369567871094,
+        65.8930435180664,
+        65.98094940185547,
+        66.06279754638672,
+        66.15277099609375,
+        66.24038696289062,
+        66.32755279541016,
+        66.40547180175781,
+        66.49640655517578,
+        66.5749740600586,
+        66.65755462646484,
+        66.73662567138672,
+        66.80570220947266,
+        66.8909912109375,
+        66.9631118774414,
+        67.024658203125,
+        67.09829711914062,
+        67.14595031738281,
+        67.22356414794922,
+        67.28999328613281,
+        67.35340118408203,
+        67.41361999511719,
+        67.4747543334961,
+        67.5412826538086,
+        67.58434295654297,
+        67.65528869628906
+      ],
+      "q10": [
+        62.17950439453125,
+        62.26702880859375,
+        62.36336135864258,
+        62.45587921142578,
+        62.53912353515625,
+        62.6277961730957,
+        62.7233772277832,
+        62.82222366333008,
+        62.92009353637695,
+        63.012332916259766,
+        63.10910415649414,
+        63.197242736816406,
+        63.29448318481445,
+        63.3817138671875,
+        63.476768493652344,
+        63.58799743652344,
+        63.679725646972656,
+        63.77979278564453,
+        63.86856460571289,
+        63.97875213623047,
+        64.05986785888672,
+        64.16062927246094,
+        64.26005554199219,
+        64.34685516357422,
+        64.44308471679688,
+        64.53656005859375,
+        64.63005065917969,
+        64.71186065673828,
+        64.79167175292969,
+        64.88162994384766,
+        64.97279357910156,
+        65.06046295166016,
+        65.15361022949219,
+        65.23280334472656,
+        65.3307876586914,
+        65.41832733154297,
+        65.500244140625,
+        65.59696960449219,
+        65.67718505859375,
+        65.74312591552734,
+        65.82767486572266,
+        65.893798828125,
+        65.98274993896484,
+        66.06427764892578,
+        66.12647247314453,
+        66.1873550415039,
+        66.25476837158203,
+        66.32322692871094,
+        66.38865661621094,
+        66.45145416259766,
+        66.504150390625,
+        66.56510162353516,
+        66.60478973388672,
+        66.6380615234375,
+        66.67476654052734,
+        66.71479034423828,
+        66.76707458496094,
+        66.806640625,
+        66.84225463867188,
+        66.87808227539062,
+        66.89889526367188,
+        66.93814849853516,
+        66.9584732055664,
+        67.00813293457031
+      ],
+      "q90": [
+        62.18345642089844,
+        62.29241943359375,
+        62.37546157836914,
+        62.47633361816406,
+        62.56452941894531,
+        62.65350341796875,
+        62.74396896362305,
+        62.840110778808594,
+        62.94641876220703,
+        63.034114837646484,
+        63.14033508300781,
+        63.238800048828125,
+        63.336917877197266,
+        63.431453704833984,
+        63.53569030761719,
+        63.62854766845703,
+        63.725215911865234,
+        63.8272819519043,
+        63.92398452758789,
+        64.02530670166016,
+        64.14302825927734,
+        64.2362060546875,
+        64.32646942138672,
+        64.42984771728516,
+        64.55123138427734,
+        64.6405029296875,
+        64.74018859863281,
+        64.83008575439453,
+        64.93889617919922,
+        65.0322036743164,
+        65.15179443359375,
+        65.24229431152344,
+        65.35137176513672,
+        65.45722961425781,
+        65.54450988769531,
+        65.64585876464844,
+        65.74200439453125,
+        65.83688354492188,
+        65.92719268798828,
+        66.02925872802734,
+        66.13005065917969,
+        66.21294403076172,
+        66.32874298095703,
+        66.42450714111328,
+        66.51537322998047,
+        66.5989761352539,
+        66.70001220703125,
+        66.79270935058594,
+        66.8851547241211,
+        66.98180389404297,
+        67.05296325683594,
+        67.14698028564453,
+        67.22115325927734,
+        67.3145523071289,
+        67.38439178466797,
+        67.472412109375,
+        67.55708312988281,
+        67.63505554199219,
+        67.71370697021484,
+        67.78089141845703,
+        67.8723373413086,
+        67.93716430664062,
+        68.02255249023438,
+        68.10362243652344
+      ],
+      "elapsed_s": 0.08855045800009975,
+      "model_id": "google/timesfm-3.0-pytorch",
+      "revision": "43046b85ec22d584a13f8098c2ed39c889e129c2",
+      "valid": true,
+      "validity_reason": "valid",
+      "context_end_mono": 48777.825125791,
+      "context_last_value": 62.0966066502857,
+      "forecast_origin_data_revision": 186
+    },
+    "predictive_wake": {
+      "type": "result",
+      "request_id": "live-fused-20261102-a:predictive_wake",
+      "monotonic": 48779.670378291,
+      "text": "The elapsed time since the start of the run is 23.967 seconds. The latest observation is fresh, as it is within the 1-second limit. The current mode is \"ALARM\".",
+      "input_tokens": 346,
+      "output_tokens": 44,
+      "finish_reason": "stop",
+      "elapsed_s": 0.7326045839945436,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 23.96734666699922,
+      "answer_as_of_mono": 48778.937077875,
+      "live_publication_clock": {
+        "run_id": "live-fused-20261102-a",
+        "revision": 7,
+        "data_revision": 203,
+        "wall_utc": "2026-11-02T16:24:37.034Z",
+        "start_wall_utc": "2026-11-02T16:24:12.325Z",
+        "elapsed_s": 24.709084666996205,
+        "now_mono": 48779.678815875,
+        "observation": {
+          "value": 63.83507457128366,
+          "age_s": 0.02515362499980256,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 21.70876175000012,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 19.464515416999348,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 21.700478958999156,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 19.714527416996134,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 19.45902012499573,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 17.812887874999433,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 17.812887874999433
+      }
+    }
+  },
+  "race": {
+    "first_token_mono": 48759.952635708,
+    "alarm_mono": 48759.964296291,
+    "urgent_due_mono": 48760.214300458
+  },
+  "deadlines": [
+    {
+      "run_id": "live-fused-20261102-a",
+      "deadline_id": "probe",
+      "scheduled_mono": 48757.970054125,
+      "fired_at_mono": 48757.978336916,
+      "lateness_s": 0.008282791000965517,
+      "wall_utc": "2026-11-02T16:24:15.333Z",
+      "revision": 3
+    },
+    {
+      "run_id": "live-fused-20261102-a",
+      "deadline_id": "urgent",
+      "scheduled_mono": 48760.214300458,
+      "fired_at_mono": 48760.21979575,
+      "lateness_s": 0.005495292003615759,
+      "wall_utc": "2026-11-02T16:24:17.575Z",
+      "revision": 6
+    }
+  ],
+  "predictive_wake": {
+    "timesfm_delay_s": 1.1,
+    "cheap_delay_s": 1.3,
+    "timesfm_forecast_s": 0.08855045800009975,
+    "cheap_forecast_s": 0.003421290995902382,
+    "cheap_model": "linear-16",
+    "scheduled_mono": 48778.925125791,
+    "maximum_silence_s": 3,
+    "minimum_delay_s": 0.25,
+    "forecast_origin_mono": 48777.825125791,
+    "claim": "point-forecast heuristic, not an event probability"
+  },
+  "loop_interval_p50_ms": 12.104041998100001,
+  "loop_interval_p95_ms": 12.643799998477334,
+  "loop_interval_max_ms": 22.751709002477583,
+  "limits": [
+    "A scripted live trial, not a benchmark of general temporal cognition.",
+    "Sensor values are simulated at real wall time; they are not physical-device readings.",
+    "Ordinary samples update data_revision; semantic events and expiry govern output invalidation.",
+    "Clock and deadline behavior comes from runtime; TimesFM only supplies a wake-time hint.",
+    "No hard real-time scheduling guarantee; timings reflect this observed run."
+  ]
+}

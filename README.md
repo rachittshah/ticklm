@@ -1,72 +1,97 @@
-# Temporal Bridge
+# Temporal Bridge — a live sense of time for a local LLM
 
-A local experiment in giving a frozen language model compact, explicit temporal evidence from observed measurements and a frozen time-series forecaster. It reuses [Rachitt's MLX TimesFM implementation](https://github.com/rachittshah/mlx-tsfm), measures a cheap classical forecaster as a hard control, and keeps both neural models unchanged.
+An event-driven temporal coprocessor for a frozen language model: **passing time, changing observations, freshness, deadlines, and answers that become stale while being generated.** It reuses [Rachitt's MLX TimesFM implementation](https://github.com/rachittshah/mlx-tsfm) for optional prediction-guided attention.
 
-**Status:** implementation and development search complete; independent held-out comparisons are running. Do not interpret this repository as evidence of improved general temporal intelligence. Results and retained evidence will be added after review.
-
-## What it does
+The operating system supplies the clock. The runtime keeps receiving events and fires deadlines while the LLM works in a separate process. The LLM receives current temporal context when it wakes. TimesFM can propose when to wake next; it cannot replace the clock or delay an observed alarm.
 
 ```
-regularly sampled history ──┬── observed time/value capsule ──┐
-                           │                                │
-                           └── TimesFM / cheap forecast     ├── frozen Qwen ── answer
-                                  └── projected capsule ────┘
+clock + arriving observations/events
+                │
+                ▼
+ temporal state + deadline supervisor ───► live clock / deadline events
+                │
+        snapshot with validity limits
+                ▼
+       isolated frozen language model
+                │
+       revalidate before publication
+          ┌─────┴─────┐
+       current       obsolete
+       publish       reject + refresh
+
+collected stream → optional frozen TimesFM → bounded next-wake hint
 ```
 
-The representation records sampling interval, past versus future, compact curve knots, and measured interpolation error. It does not receive the question or its answer while compressing evidence. Forecast uncertainty is pointwise; it does not imply a calibrated probability for a whole future path.
+**Claim boundary:** this gives the combined system live temporal state. It does not add a clock to frozen model weights, demonstrate consciousness, or establish broad temporal intelligence. The first static forecasting experiment was a scope mistake; it is retained as prior exploration, not evidence of the live goal.
 
-The study distinguishes observed-history interpretation from forecast-assisted decisions. All forecast-free observed arms share the same historical representation. The numerical forecaster is also scored directly without an LLM.
+## Run the live prototype
 
-## Local setup
-
-Python 3.12 and Apple Silicon are required for the measured MLX path. The experiment uses the local Qwen3-4B abliterated 4-bit checkpoint as an available small-model subject, not a representative frontier model.
+Python 3.12, Apple Silicon, the MLX TimesFM checkout, and a local MLX language-model checkpoint are required for the measured configuration.
 
 ```bash
 cd /Users/rachitt/labs/temporal-bridge
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -e '.[dev]' -e /Users/rachitt/mlx-tsfm
-mkdir -p data artifacts
-curl -L --fail https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTh1.csv -o data/ETTh1.csv
+
+# Actual waiting, mid-generation alarm, deadlines, expiry, and refreshed answers.
+.venv/bin/python realtime.py self-test --clock-only --run-dir artifacts/my-clock-trial
+
+# Also collect live samples, forecast them, and execute a predicted wake.
+.venv/bin/python realtime.py self-test --run-dir artifacts/my-fused-trial
+
+# Watch the machine's live load, with a real 20-second deadline.
+.venv/bin/python realtime.py watch --clock-only --seconds 60 \
+  --deadline-seconds 20 --run-dir artifacts/my-watch
 ```
 
-Recorded ETTh1 SHA-256: `f18de3ad269cef59bb07b5438d79bb3042d3be49bdeecf01c1cd6d29695ee066`.
+Use a new run directory every time. The default model is the locally cached Qwen3-4B abliterated 4-bit checkpoint at `/Users/rachitt/labs/qwen3-4b-abliterated-mlx/models/qwen3-4b-abliterated-4bit`; override with `--model /path/to/model`.
 
-The local TimesFM implementation used here is commit `c834636e97f98940d95e34601a17de3886bf79d3`. TimesFM weights are pinned to revision `43046b85ec22d584a13f8098c2ed39c889e129c2` of `google/timesfm-3.0-pytorch`. The model's non-commercial weight license applies separately from the implementation; this repository does not redistribute weights. [Official model card](https://huggingface.co/google/timesfm-3.0-pytorch).
+The self-test's sensor values are simulated **at real wall-clock arrivals**. No history is preloaded. Waiting, event arrival, inference, deadline dispatch and wake scheduling are real. The model receives 128 causally resampled points only after enough uninterrupted live history exists. This is a scripted integration trial, not a statistical reasoning benchmark. The final clock-only trial passed 10 checks; the final fused trial passed 12 checks over 24.69 seconds with 201 sample arrivals. See [measured results and retained traces](docs/live-results.md).
 
-Supply a local MLX language-model directory with `--model`. The default is `/Users/rachitt/labs/qwen3-4b-abliterated-mlx/models/qwen3-4b-abliterated-4bit`. Manifests record exact weight/tokenizer hashes, package versions, external TSFM source hashes and data identity. Model weights, downloaded data and scratch artifacts are ignored by Git.
+## Feed your own live events
 
-## Reproduce the experiment
-
-Use a new explicit run directory; existing artifacts are not overwritten.
+Create an empty append-only file, then start the watcher. It starts at end-of-file and uses arrival times; it does not relabel a historical backlog as live data.
 
 ```bash
-.venv/bin/python -m temporal_bridge.backends --smoke --model /path/to/local/mlx-model
-.venv/bin/python -m temporal_bridge.experiment dev --run-dir artifacts/my-run --model /path/to/local/mlx-model
-.venv/bin/python -m temporal_bridge.experiment test --run-dir artifacts/my-run --model /path/to/local/mlx-model
-.venv/bin/python -m temporal_bridge.experiment demo --run-dir artifacts/my-run --model /path/to/local/mlx-model
+mkdir -p data
+touch data/live-events.jsonl
+.venv/bin/python realtime.py watch --clock-only --events data/live-events.jsonl \
+  --seconds 120 --run-dir artifacts/my-events
 ```
 
-Development evaluates uniform/adaptive curves at 256/384/512 evidence-token caps on 36 cases. Selection maximizes development accuracy, breaking ties by lower prompt-token count. The selected configuration is frozen before 72 held-out cases. The test refuses changed code, data, model identity, dependencies or checkpoint weights.
+Append one JSON object per line from another terminal or a sensor producer:
 
-Seven final arms: question-only, raw values, uniform history, temporal statistics, cheap forecast, TimesFM forecast and mismatched TimesFM forecast. Every prompt and answer is retained. Scoring restricts the next token to A/B/C/D and therefore measures constrained choice, not general free-form reasoning; separate generated examples are also retained. Exact questions and labels are in the benchmark module.
+```json
+{"type":"sample","value":42.5}
+{"type":"event","name":"door","payload":{"open":true}}
+{"type":"deadline","id":"follow_up","after_s":10}
+```
 
-The real-data arm has 36 held-out windows of one ETTh1 temperature series and one future-maximum-bin question. Its uncertainty is exploratory window-level evidence. Synthetic observed questions include reversal and elapsed-time scaling partners. The study does not establish calendar reasoning, causal understanding, irregular-time reasoning or uncontaminated cross-domain generalization.
+Omit `--clock-only` to enable TimesFM wake hints once sufficient regularly resampleable history arrives. `--change-threshold` controls which numeric changes create semantic wake events. The default is 1.0 in the stream's units; choose it for your source. The runtime also wakes on a maximum-silence timer. Source timestamps are deliberately rejected: age means time since the controller read a record, not time since a producer wrote or physically measured it. Buffered records' physical age is unknown; relative file deadlines start at ingestion. Rotation/truncation resets to the new end-of-file and can discard replacement-file records. This prototype is not a lossless event transport.
 
-## Verify
+Published output includes the narrative's snapshot time and freshly computed clock fields. Ordinary samples advance a data revision; relevant events advance the semantic revision. Observation-dependent requests can bind the data revision and freshness limit. Every pending deadline crossing is checked at publication, including between supervisor ticks.
+
+## Validation and evidence
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/ruff check src tests
+.venv/bin/ruff check src tests app.py realtime.py
 git diff --check
 ```
 
-Current validation: 41 tests pass; Ruff passes. Tests exercise clock serialization, numeric error certificates, invalid data, split separation, hidden-label isolation, exact option scoring, checkpoint pinning and frozen-run identity.
+The live trials retain request snapshots, prompts, first-token timestamps, incoming events, deadline dispatches, raw completions, rejections and publication-time clocks. Failed development trials are retained too. Exact categorical grading rejects negation and ambiguous replies; a numeric elapsed-time probe is checked against the captured clock.
 
-## Research record
+- [Live design and limits](docs/realtime-design.md)
+- [Measured results and evidence](docs/live-results.md)
+- [Current real-time research](docs/realtime-research.md)
+- [Independent runtime review](docs/realtime-review.md)
+- [Initial live-trial failures and review](docs/live-evidence-review.md)
+- [Earlier static study and its failure analysis](docs/failure-analysis-v1.md)
 
-- [Design and alternatives](docs/design.md)
-- [Dated primary-source literature review](docs/literature.md)
-- [Independent scientific review](docs/review-before-test.md)
-- [Three further research hypotheses](docs/research-next.md)
+Clock-only behavior is the mandatory low-cost baseline. The prototype demonstrates that TimesFM can be connected to live scheduling; a reduction in inference calls or improvement over cheap scheduling is **not established**. There is no hard real-time operating-system guarantee.
 
-Prior work already covers TSFM–LLM fusion, soft-token alignment, forecast quantile prompts and Apple MLX deployment. This work tests a particular quality/cost trade-off; it does not claim the broad architecture is novel.
+## Models and earlier research
+
+The TSFM source checkout used during development was `mlx-tsfm` commit `c834636e97f98940d95e34601a17de3886bf79d3`. TimesFM weights are pinned to revision `43046b85ec22d584a13f8098c2ed39c889e129c2` of `google/timesfm-3.0-pytorch`. Its [non-commercial weight license](https://huggingface.co/google/timesfm-3.0-pytorch) applies separately from the implementation. Weights and local caches are not committed.
+
+The earlier `temporal_bridge.experiment` CLI remains reproducible from its recorded source revision and manifests. Its [literature review](docs/literature.md) covers static time-series fusion, and [design](docs/design.md) records that earlier study. Those results cannot answer the corrected live-time question.

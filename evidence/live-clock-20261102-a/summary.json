@@ -1,0 +1,148 @@
+{
+  "run_id": "live-clock-20261102-a",
+  "mode": "clock_only",
+  "checks": {
+    "actual_wait_before_clock_query": true,
+    "fresh_clock_answer_expired": false,
+    "event_arrived_during_real_generation": true,
+    "urgent_deadline_fired_during_generation": true,
+    "stale_inflight_answer_rejected": true,
+    "refresh_answer_uses_new_alarm": false,
+    "clock_expires_without_semantic_event": true,
+    "observation_really_older_than_one_second": true,
+    "model_identifies_stale_observation": false
+  },
+  "all_checks_passed": false,
+  "elapsed_wall_s": 8.345415000003413,
+  "samples_ingested": 61,
+  "llm_calls": 5,
+  "frozen_context_control": {
+    "type": "result",
+    "request_id": "live-clock-20261102-a:frozen_clock",
+    "monotonic": 48096.840833541,
+    "text": "PENDING",
+    "input_tokens": 138,
+    "output_tokens": 3,
+    "finish_reason": "stop",
+    "elapsed_s": 0.2295810830037226,
+    "valid": true,
+    "validity_reason": "valid",
+    "control_only": true
+  },
+  "fresh_context_response": {
+    "type": "result",
+    "request_id": "live-clock-20261102-a:fresh_clock",
+    "monotonic": 48097.034519166,
+    "text": "PENDING",
+    "input_tokens": 181,
+    "output_tokens": 3,
+    "finish_reason": "stop",
+    "elapsed_s": 0.18296204099897295,
+    "valid": true,
+    "validity_reason": "valid",
+    "control_only": false
+  },
+  "results": {
+    "frozen_clock": {
+      "type": "result",
+      "request_id": "live-clock-20261102-a:frozen_clock",
+      "monotonic": 48096.840833541,
+      "text": "PENDING",
+      "input_tokens": 138,
+      "output_tokens": 3,
+      "finish_reason": "stop",
+      "elapsed_s": 0.2295810830037226,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": true
+    },
+    "fresh_clock": {
+      "type": "result",
+      "request_id": "live-clock-20261102-a:fresh_clock",
+      "monotonic": 48097.034519166,
+      "text": "PENDING",
+      "input_tokens": 181,
+      "output_tokens": 3,
+      "finish_reason": "stop",
+      "elapsed_s": 0.18296204099897295,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false
+    },
+    "race": {
+      "type": "result",
+      "request_id": "live-clock-20261102-a:race",
+      "monotonic": 48098.749571958,
+      "text": "1. The current mode is \"NORMAL,\" indicating the system is operating within expected parameters.  \n2. The system's last sample was taken 0.045 seconds ago, with a value of 53.775.  \n3. The elapsed time since the last sample is 4.447 seconds.  \n4. The deadline probe has fired, with remaining time set to 0.000 seconds.  \n5. The event mode is \"NORMAL,\" and the payload indicates the system is functioning as expected.  \n6. The deadline due event has an age of 1.440 seconds, indicating it is about to expire.  \n7. The system is monitored for anomalies, with a focus on maintaining normal operation.  \n8. The monitoring plan includes checking the system's performance against predefined thresholds.  \n9. The plan involves tracking the system's response time and resource utilization.  \n10. The system is expected to remain stable, with",
+      "input_tokens": 191,
+      "output_tokens": 200,
+      "finish_reason": "length",
+      "elapsed_s": 1.7096972920044209,
+      "valid": false,
+      "validity_reason": "state_changed",
+      "control_only": false
+    },
+    "refresh": {
+      "type": "result",
+      "request_id": "live-clock-20261102-a:refresh",
+      "monotonic": 48099.003377291,
+      "text": "ALARM; PENDING",
+      "input_tokens": 248,
+      "output_tokens": 6,
+      "finish_reason": "stop",
+      "elapsed_s": 0.2505684999996447,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false
+    },
+    "freshness": {
+      "type": "result",
+      "request_id": "live-clock-20261102-a:freshness",
+      "monotonic": 48100.928464208,
+      "text": "FRESH",
+      "input_tokens": 243,
+      "output_tokens": 3,
+      "finish_reason": "stop",
+      "elapsed_s": 0.3101531249994878,
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false
+    }
+  },
+  "race": {
+    "first_token_mono": 48097.20080025,
+    "alarm_mono": 48097.204924375,
+    "urgent_due_mono": 48097.454927291
+  },
+  "deadlines": [
+    {
+      "run_id": "live-clock-20261102-a",
+      "deadline_id": "probe",
+      "scheduled_mono": 48095.592296291,
+      "fired_at_mono": 48095.59878,
+      "lateness_s": 0.00648370900307782,
+      "wall_utc": "2026-11-02T16:13:12.954Z",
+      "revision": 3
+    },
+    {
+      "run_id": "live-clock-20261102-a",
+      "deadline_id": "urgent",
+      "scheduled_mono": 48097.454927291,
+      "fired_at_mono": 48097.460090666,
+      "lateness_s": 0.005163374997209758,
+      "wall_utc": "2026-11-02T16:13:14.815Z",
+      "revision": 6
+    }
+  ],
+  "predictive_wake": null,
+  "loop_interval_p50_ms": 11.114458000520244,
+  "loop_interval_p95_ms": 11.604568298571394,
+  "loop_interval_max_ms": 15.010542003437877,
+  "limits": [
+    "A scripted live trial, not a benchmark of general temporal cognition.",
+    "Sensor values are simulated at real wall time; they are not physical-device readings.",
+    "Ordinary samples update data_revision; semantic events and expiry govern output invalidation.",
+    "Clock and deadline behavior comes from runtime; TimesFM only supplies a wake-time hint.",
+    "No hard real-time scheduling guarantee; timings reflect this observed run."
+  ]
+}

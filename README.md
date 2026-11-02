@@ -111,6 +111,26 @@ These were short, scripted tests. They do not establish reliability across arbit
 
 ## Try it
 
+TickLM can use **Claude Code through `cca startup`** or **Codex**, using their existing local sign-ins. Start with the clock and event tests:
+
+```bash
+.venv/bin/python realtime.py self-test --provider claude \
+  --model claude-opus-5-5 --claude-profile startup --effort xhigh \
+  --clock-only --trial-timeout-s 240 --run-dir artifacts/my-claude-trial
+
+.venv/bin/python realtime.py self-test --provider codex \
+  --model gpt-6-astra --effort xhigh \
+  --clock-only --trial-timeout-s 240 --run-dir artifacts/my-codex-trial
+```
+
+Use a new output directory for every run. Omit `--clock-only` to include the local TimesFM model. The same `--provider` options also work with the `watch` command below.
+
+These runs use fresh conversations and record the model identity reported by the client. Claude launches through the `startup` account with `--safe` and `--safe-mode`; Codex uses its streaming app server. Timings include client startup, network delays and model response time. The clients do not enforce this experiment's requested output-token caps.
+
+The 240-second limit allows a longer test after warmup. It **does not extend** the normal six-second answer validity window, the one-second measurement freshness rule, or either deadline. A correct but outdated answer is retained in the diagnostic record and rejected from publication. Inspect `answer_correctness`, `publication_checks` and `response_measurements` separately in the saved summary.
+
+To run the original local Qwen model:
+
 On the existing local setup, run:
 
 ```bash

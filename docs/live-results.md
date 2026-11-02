@@ -1,6 +1,6 @@
-# Can we give a language model a live sense of time?
+# TickLM: can we give a language model a live sense of time?
 
-**We built a working prototype that helps an AI assistant keep track of passing time and changes while it is busy.** It runs locally and does not require retraining either model.
+**TickLM is a working prototype that helps an AI assistant keep track of passing time and changes while it is busy.** It runs locally and does not require retraining either model.
 
 The useful result is straightforward: a small program watches the clock and incoming information, then gives the language model an up-to-date account of what is happening. If the situation changes while the model is writing, the program can stop that old answer from reaching the user.
 

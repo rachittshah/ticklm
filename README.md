@@ -1,10 +1,10 @@
-# Temporal Bridge
+# TickLM
 
-**Helping an AI assistant keep track of passing time and changes around it.**
+**A live sense of time for language models.**
 
 The idea is simple: an assistant should notice that a deadline has passed, that its information is getting old, or that something changed while it was writing an answer. It should be able to do this without waiting for someone to send another message.
 
-This prototype adds a small program around a language model. That program watches the clock and incoming information, tells the model when it needs to respond, and checks whether its answer is still usable before showing it.
+TickLM adds a small program around a language model. That program watches the clock and incoming information, tells the model when it needs to respond, and checks whether its answer is still usable before showing it.
 
 It runs locally. Neither the language model nor the forecasting model was retrained.
 

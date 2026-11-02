@@ -16,31 +16,90 @@ The program records the change while the assistant is still writing. It catches 
 
 That is the kind of behavior this project is trying to make work.
 
-There are three parts:
+## Which models did we use?
 
-| Part | Its job |
-|---|---|
-| The clock and event watcher | Keep track of elapsed time, deadlines, new information, and how old that information is. |
-| The language model | Read the current situation and explain it or answer a question. |
-| TimesFM, an optional time-series forecasting model | Look at changing measurements and suggest when the assistant should check again. |
+Both models ran locally on an **Apple M4 Max**, using MLX, Apple's software for running models on Apple Silicon. Neither model was retrained for this experiment.
+
+| Part | Exact implementation | Its job |
+|---|---|---|
+| Clock and event watcher | Python's `time.monotonic()` and our `TemporalState` program | Calculate elapsed time, track deadlines and incoming changes, and check whether an answer is still usable. |
+| Language model | **Qwen3-4B abliterated**, stored in a compressed 4-bit format | Read a supplied account of the current time and situation, then answer questions about it. |
+| Optional forecasting model | **Google TimesFM 3.0**, checkpoint `google/timesfm-3.0-pytorch`, run through [Rachitt's MLX implementation](https://github.com/rachittshah/mlx-tsfm) | Predict future numerical measurements so the program can choose when to ask Qwen to check again. |
 
 **The clock tells us how much time has passed. TimesFM predicts what might happen next.** The forecasting model is not needed to count seconds or enforce a deadline.
 
-## What worked in the live test
+```mermaid
+flowchart TB
+    subgraph LIVE["Keeps running while the models work"]
+        direction LR
+        clock["Python monotonic clock<br/>Elapsed time and deadlines"]
+        stream["Live readings and events<br/>201 simulated readings"]
+        state["Current time and situation<br/>Latest reading, age, events"]
+        clock --> state
+        stream --> state
+    end
 
-We ran a test lasting about **25 seconds**. During that time, the program received **201 measurements** and called the language model **7 times**.
+    state -->|"Send current snapshot"| llm["Qwen3-4B abliterated<br/>4-bit · Answer from snapshot"]
+    llm --> guard{"Still valid?"}
+    state -->|"Check changes and expiry"| guard
+    guard -->|Yes| show["Show answer<br/>Label snapshot time"]
+    guard -->|No| retry["Discard old answer<br/>Take a fresh snapshot"]
+    retry --> state
 
-- After a real wait, the model correctly reported the elapsed time and an expired deadline.
-- An alarm arrived while the model was writing. The program handled the alarm and a deadline without waiting for the answer to finish.
-- The outdated answer was rejected. The next answer reflected the alarm.
-- When new measurements stopped arriving, the model correctly identified the last measurement as too old.
-- TimesFM made a forecast from measurements collected during the run. The program used that forecast to schedule another check.
+    stream -.->|"128 values, 0.1 seconds apart"| tsfm["TimesFM 3.0 · optional<br/>Predict the next 64 values"]
+    tsfm -.-> policy["Schedule next check<br/>1.1 seconds in this run"]
+    policy -.->|"Set timer; events act independently"| state
 
-The clock-only version passed all 10 checks in its final scripted test. The version with TimesFM passed all 12. A separate test also passed with events written to a real file while the model was generating an answer.
+    style LIVE fill:#f8fafc,stroke:#cbd5e1,color:#172b4d
+    classDef input fill:#e8f0fe,stroke:#4267a9,color:#172b4d
+    classDef language fill:#ede9fe,stroke:#7c3aed,color:#352060
+    classDef forecast fill:#e0f2f1,stroke:#0f766e,color:#134e4a
+    classDef check fill:#fff4db,stroke:#b7791f,color:#593b0b
+    classDef output fill:#e7f5e9,stroke:#358348,color:#183e24
+    class clock,stream,state input
+    class llm language
+    class tsfm,policy forecast
+    class guard,retry check
+    class show output
+```
 
-The measurements in the main demonstration were simulated, but they arrived as real time passed. We did not feed in a complete recorded history and pretend it was live. The waits, model responses, alarms, deadlines, and answer rejection actually happened.
+The dashed path is the optional forecast-based timer. TimesFM does not calculate elapsed time, and its forecast is not fed into Qwen as a learned representation. In this prototype, it changes **when Qwen is called**. The clock and event watcher supply **what Qwen knows about time**.
 
-Read the [plain-language results report](docs/live-results.md) for the measurements, failures, and limits.
+## What exactly did we measure?
+
+The final combined test ran for **24.69 seconds after model warmup**, received **201 simulated numerical readings**, made **7 calls to Qwen**, and made **1 TimesFM forecast**. These counts describe one scripted run, not 201 independent tests.
+
+### 1. Time between point A and point B
+
+Point A was the start of the live run. Point B was the moment the program prepared a snapshot for Qwen. Python's monotonic clock measured both points; the program subtracted A from B:
+
+```text
+A: run starts             49066.418777208 seconds on the monotonic clock
+B: snapshot is prepared   49070.946509750 seconds on the same clock
+B minus A                     4.527732542 seconds elapsed
+
+Text supplied to Qwen: "Run elapsed time: 4.528 seconds since run start,
+                       measured with a monotonic clock."
+Qwen's answer:         "4.528"
+```
+
+These are elapsed-clock readings, not times of day. **The program calculated the interval; Qwen reported the value it was given.** This checks whether Qwen uses current clock information. It does not show Qwen independently measuring time, doing the subtraction, or learning an internal clock. The answer describes point B; additional time passed while Qwen generated it.
+
+### 2. Changes arriving while Qwen was answering
+
+An alarm arrived after Qwen had generated its first token. A deadline set for **250 milliseconds later** fired while Qwen was still writing. The program rejected that outdated answer and asked again; Qwen then answered **`ALARM; EXPIRED`**. After the measurement source was paused, Qwen also reported **`STALE`** using the supplied one-second freshness rule.
+
+### 3. What TimesFM actually did
+
+The 201 readings were numbers from a simulated sensor, generated about once every **0.1 seconds** as real time passed, with an intentional **three-second pause**. They were not physical sensor measurements or language-model outputs.
+
+By the time TimesFM was called, **185 readings** had arrived. The program used recent readings to construct **128 evenly spaced input values**, covering **12.7 seconds**, and asked TimesFM to predict **64 future values**, covering **6.4 seconds**. A simple rule looked for the first predicted change of at least one unit. TimesFM's forecast put that change **1.1 seconds** after the last input reading, so the program scheduled a check for that time. The timer fired and Qwen was called with an updated snapshot.
+
+TimesFM took **67.39 milliseconds** for that forecast. A cheap predictor fitted to the recent numerical history took **3.71 milliseconds** and suggested **1.3 seconds**. We executed the TimesFM timer; we did not establish that its suggestion was more accurate or saved computation.
+
+The final version without TimesFM passed **10 of 10 scripted checks**; the version with TimesFM passed **12 of 12**. A separate test also passed with events written to a real file during generation. The [results report](docs/live-results.md) explains each measurement, the actual timeout limits, model identities, and links to the recorded prompts and answers.
+
+**Timing clarification:** the retained run lasted 24.69 seconds. Its safety limits were 90 seconds for model warmup after worker launch and 70 seconds for the live test; neither limit was reached. We have no retained evidence of a 21-minute timeout or a 21-minute live test.
 
 ## What we have not proved
 

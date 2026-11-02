@@ -1,52 +1,100 @@
-# Live-time proof of concept: measured result
+# Can we give a language model a live sense of time?
 
-Date: 2026-11-02. Hardware: Apple M4 Max, 36 GiB unified memory. Local language model: Qwen3-4B abliterated, 4-bit MLX. Optional predictor: Rachitt's MLX TimesFM 3 implementation, pinned checkpoint `43046b85ec22d584a13f8098c2ed39c889e129c2`. Neither model was trained or modified.
+**We built a working prototype that helps an AI assistant keep track of passing time and changes while it is busy.** It runs locally and does not require retraining either model.
 
-**The corrected prototype works in the scripted live trials.** It keeps track of actual elapsed time, observation age, deadlines and incoming changes while the language model generates. It invalidates an obsolete answer and supplies refreshed context for the next one. The TimesFM path also consumes a live-derived history and schedules a later wake.
+The useful result is straightforward: a small program watches the clock and incoming information, then gives the language model an up-to-date account of what is happening. If the situation changes while the model is writing, the program can stop that old answer from reaching the user.
 
-This is an external runtime giving a frozen model current temporal facts. It is not a clock learned inside the weights, a general temporal-reasoning benchmark, or evidence that TimesFM improves scheduling over cheap rules.
+The model is using a clock supplied to it. It has not learned to keep time independently.
 
-## Final evidence
+## What we were trying to achieve
 
-| Trial | What actually ran | Outcome |
+An assistant should be able to notice things such as:
+
+- “I have been waiting for five seconds.”
+- “That deadline has already passed.”
+- “My last measurement is now too old to rely on.”
+- “An alarm arrived while I was answering, so my answer needs to change.”
+
+We also wanted to explore whether TimesFM—a model that predicts how measurements change over time—could help the assistant decide when to check again.
+
+These are different jobs. An ordinary clock can measure elapsed time exactly. A forecasting model is useful only if its predictions help the assistant anticipate a change.
+
+## What happened in the final live test
+
+The test ran for **24.69 seconds** on an Apple M4 Max Mac. The program received **201 measurements** and called the language model **7 times**.
+
+First, we let real time pass. When asked how long the run had been active, the model answered **4.528 seconds**. The clock value supplied to it was about **4.5277 seconds**. It also correctly reported that a deadline had expired. When given an intentionally old copy of the situation instead, it said the deadline was still pending.
+
+Next, we started a longer answer. After the model had begun producing text, we introduced an alarm and set an urgent deadline. The program received the alarm and handled the deadline while the model continued writing. Once that answer finished, the program rejected it because it had been written from the old situation. The next answer correctly reported the alarm and expired deadline.
+
+We then paused the incoming measurements. The model correctly identified the last measurement as too old under the test's one-second freshness rule. We also checked that an answer could expire simply because time passed, even without a new event.
+
+Finally, the program collected enough recent measurements to call TimesFM. TimesFM produced a forecast, and the program used it to schedule another check. That check actually ran.
+
+The main demonstration used simulated measurements produced as real time passed. The data did not come from a physical sensor. However, the waiting, model generation, alarm arrival, deadline handling, and rejection of the old answer all happened in real time. A separate test used actual events appended to a file while the model was generating.
+
+## What passed
+
+| Test | Result | What it establishes |
 |---|---|---|
-| [Clock-only D](../evidence/live-clock-20261102-d/summary.json) | Real wait, refreshed clock, numerical elapsed answer, first-token-triggered alarm, urgent deadline, stale-result rejection, refreshed answer, source pause and expiry | 10/10 scripted checks, 8.85 seconds |
-| [Clock + TimesFM B](../evidence/live-fused-20261102-b/summary.json) | Same clock/event trial, then enough live arrivals to construct a regular 128-point history, actual TimesFM inference and execution of its proposed wake | 12/12 scripted checks, 24.69 seconds, 201 sample arrivals, 7 LLM calls |
-| [Real file watcher B](../evidence/live-watch-20261102-b/test-output.log) | Public CLI, actual append-only file events during generation, file deadline, rejection without exposing stale text, later valid publication | Real-model integration test passed |
+| Clock and event handling, without TimesFM | 10 of 10 scripted checks passed | The system can use a clock, track changes, reject an old answer, and refresh its response. |
+| Clock and event handling, with TimesFM | 12 of 12 scripted checks passed | The forecasting model can run on newly collected data and schedule a later check. |
+| Events written to a real file during generation | Passed | The public watcher can receive an event and deadline, reject an outdated answer, and later display a valid one. |
+| Automated software tests | 91 passed | The tested clock, timing, input, and answer-validity rules behave as specified. |
 
-The TimesFM trial's measured details:
+These are results from short, scripted tests. “12 of 12” is not a claim of perfect reliability in ordinary conversations.
 
-- The model answered **4.528 seconds** for a captured elapsed time of **4.527732542 seconds**. This demonstrates reading the supplied clock, not independently estimating time from its tokens.
-- The deliberately stale frozen context said the original deadline was `PENDING`; refreshed context produced `EXPIRED`.
-- An alarm arrived after the first actual generated token. The urgent deadline fired during that generation. The old answer was rejected for `state_changed`; the refreshed answer was `ALARM; EXPIRED`.
-- Deadline dispatch was observed 4.33 ms and 0.45 ms after the two scheduled times. Event-loop interval p95 was 12.82 ms. These are observations from this run, not worst-case guarantees.
-- After a genuine pause in sample arrival, the model identified the sample as `STALE`. A separate ticket also expired with no new semantic event.
-- The one TimesFM forecast call took **67.39 ms**, including this process's first execution of that shape. The cheap predictor took **3.71 ms**. TimesFM suggested a 1.1-second attention interval; the cheap predictor suggested 1.3 seconds. The TimesFM wake was executed. This single comparison does not show that its wake was better.
+## Is TimesFM worth the extra work?
 
-The live sensor in the self-test is simulated, with each value computed when its actual wall-clock arrival occurs. There is no preloaded numerical history. The forecast input is **128 regularly resampled values derived from those live samples**, rather than an assertion that every sample arrived at an exact 100 ms interval. A long missing-data gap is rejected before resampling. The separate watcher test uses actual file writes.
+**We do not know yet.**
 
-Every successful and rejected completion is in the diagnostic JSONL trace, with explicit request identity, snapshot, first-token time, event time and publication decision. User-facing watcher output suppresses rejected text. Narratives carry an as-of-snapshot timestamp; the publication-time clock is a separate, fresh object.
+The clock-only version already performs the basic timekeeping job. It does not need a neural model to count seconds, notice that a deadline passed, or record when information arrived.
 
-## Development failures are retained
+In the final test, TimesFM took about **67 milliseconds** to produce its forecast. A simple predictor took about **4 milliseconds**. TimesFM suggested checking again after **1.1 seconds**; the simple predictor suggested **1.3 seconds**. We used TimesFM's suggestion, but this one comparison does not tell us which was better.
 
-- [Clock A](../evidence/live-clock-20261102-a/summary.json): timer and concurrency mechanics worked, but the model missed all three deadline/freshness answers. Compact fields such as `fired` did not produce reliable interpretations.
-- [Clock B](../evidence/live-clock-20261102-b/summary.json): explicit time meanings fixed the elapsed, stale-observation and refreshed-alarm answers; the deadline question still failed. The ambiguous “due now?” wording was replaced with an explicit request for the deadline's status.
-- [Clock C](../evidence/live-clock-20261102-c/summary.json) and [fused A](../evidence/live-fused-20261102-a/summary.json): passed their scripted checks. Further review then tightened watcher publication, request-identity copying and source intake handling. D and fused B reran the core behavior with those fixes.
+The next research question is whether prediction helps the assistant catch changes sooner or make fewer unnecessary model calls. That needs a comparison on the same streams, with the same limits on missed events and response delay. We have not completed that comparison.
 
-These are iterative debugging trials with different implementations, not independent draws that can be combined into a reliability percentage. Unit tests separately reproduce UTC jumps, deadline crossings between ticks, observation updates, freshness transitions, restarts, expired tickets and mutated ticket identities.
+For now, the cheapest demonstrated approach is the clock-and-event program. TimesFM is a working optional addition whose benefit remains unproven.
 
-## What is cheapest, and what remains research
+## What went wrong along the way
 
-Exact timekeeping needs no neural model. The default recommendation for passing time, observation receipt age and deadlines is the clock-only runtime. It invokes the LLM at relevant boundaries rather than spending model inference to count time.
+The first live attempt handled the clock and incoming events correctly, but the language model gave wrong answers about expired deadlines and old measurements. It struggled with the compact technical fields we supplied.
 
-TimesFM is an optional anticipatory component. The implementation proves that a frozen numerical predictor can participate in the live loop without blocking event intake. It does **not** yet establish fewer LLM calls, better event detection, lower overall cost or better answers than a cheap predictor. A meaningful next experiment would compare schedules on identical recorded streams with fixed limits on missed events and response delay, then measure inference calls and total energy/latency. That experiment is not claimed complete here.
+We made those fields explicit: how long the run had been active, how old the last measurement was, and whether a deadline was pending or expired. We also clarified an ambiguous question about whether a deadline was “due now.” The later runs passed after those changes.
 
-The research hypothesis is a validity-limited temporal context: the runtime supplies typed clock facts and predicted dynamics, but a result is usable only while its time and event dependencies remain valid. Related clock-aware and asynchronous systems already exist. The [real-time literature review](realtime-research.md) includes TimeInteract, On the Clock and AgentTime; no global novelty claim is made.
+We kept the failed runs. They show that simply attaching timestamps to a model is not enough. How the information is presented matters, and the software must enforce timing rules rather than trusting every generated answer.
 
-## Practical boundaries
+The earlier static forecasting study was also a detour: it tested questions about numerical sequences, which did not answer the request for awareness of time as it passes. Its results are retained separately.
 
-File-source age is measured since controller ingestion, not producer write time or physical measurement time. Records buffered during model warmup have unknown producer age; `after_s` deadlines begin when ingested. Rotation/truncation can discard replacement-file records before detection, and this is logged. The watcher is not a lossless event transport.
+## What this does—and does not—mean
 
-The supplied LLM is small and modified; success on these fixed prompts does not imply robust arbitrary conversational time reasoning. The benchmark does not cover machine suspend/resume, production restarts, external timestamp reconciliation or distributed clocks. There are no hard real-time guarantees. TimesFM 3's non-commercial weight terms remain applicable.
+The combined system now has a practical way to keep time, receive changes while the model is busy, and check whether an answer is still usable.
 
-The earlier static time-series QA was the wrong target for the user's real-time objective. Its [failure analysis](failure-analysis-v1.md) and [raw evidence](../evidence/static-v1/) remain available for inspection; they are not used to claim live temporal awareness.
+The language model itself is unchanged. It receives current time information when called; it does not continuously think or maintain an independent internal clock between calls. We have not established a new scientific breakthrough, broad temporal intelligence, or an advantage over all existing approaches. The [research review](realtime-research.md) documents related work.
+
+There are also practical limits. For file input, the program measures age from when it reads a record. It cannot tell how long that record waited before being read, so the original measurement's age may be unknown. Relative deadlines start when read. Replacing or shortening the input file can cause records to be missed. We have not established reliable operation through machine sleep, production restarts, or arbitrary long-running conversations.
+
+## Read the evidence
+
+The tests used a local Qwen3-4B language model in a compressed 4-bit format and Rachitt's Apple Silicon implementation of TimesFM 3. Neither model was retrained. The TimesFM model's non-commercial license applies.
+
+The records below include the exact prompts, clock readings, arriving events, model responses, and decisions to display or reject an answer. Each run identifies the code and model files it used.
+
+- [Final clock-only trial](../evidence/live-clock-20261102-d/summary.json)
+- [Final trial with TimesFM](../evidence/live-fused-20261102-b/summary.json)
+- [Real file-watcher test output](../evidence/live-watch-20261102-b/test-output.log) and [displayed output](../evidence/live-watch-20261102-b/stdout.log)
+- [First failed live trial](../evidence/live-clock-20261102-a/summary.json) and [second attempt](../evidence/live-clock-20261102-b/summary.json)
+- [Automated test results](../evidence/verification/pytest.txt)
+- [Independent review](realtime-final-review.md)
+- [Earlier static-study failure analysis](failure-analysis-v1.md)
+
+<details>
+<summary>Additional timing details</summary>
+
+In the final TimesFM trial, the two deadlines were handled 4.33 milliseconds and 0.45 milliseconds after their scheduled times. Ninety-five percent of the recorded gaps between checks were 12.82 milliseconds or shorter. These are measurements from one run, not guarantees about the maximum possible delay.
+
+The TimesFM forecast took 67.39 milliseconds, including the first execution of that input shape in that process. The simple predictor took 3.71 milliseconds. The forecast used 128 regularly spaced values constructed from the measurements received during the live run. The program refuses to fill a long gap in missing data merely to make that input look regular.
+
+Displayed answers are labeled with the time of the information they used. The current clock is reported separately. That distinction matters: showing a new timestamp beside an old answer does not make the old answer current.
+
+</details>

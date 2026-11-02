@@ -1,56 +1,87 @@
-# Temporal Bridge — a live sense of time for a local LLM
+# Temporal Bridge
 
-An event-driven temporal coprocessor for a frozen language model: **passing time, changing observations, freshness, deadlines, and answers that become stale while being generated.** It reuses [Rachitt's MLX TimesFM implementation](https://github.com/rachittshah/mlx-tsfm) for optional prediction-guided attention.
+**Helping an AI assistant keep track of passing time and changes around it.**
 
-The operating system supplies the clock. The runtime keeps receiving events and fires deadlines while the LLM works in a separate process. The LLM receives current temporal context when it wakes. TimesFM can propose when to wake next; it cannot replace the clock or delay an observed alarm.
+The idea is simple: an assistant should notice that a deadline has passed, that its information is getting old, or that something changed while it was writing an answer. It should be able to do this without waiting for someone to send another message.
 
+This prototype adds a small program around a language model. That program watches the clock and incoming information, tells the model when it needs to respond, and checks whether its answer is still usable before showing it.
+
+It runs locally. Neither the language model nor the forecasting model was retrained.
+
+## What this looks like
+
+Imagine an assistant monitoring a door. It starts writing “the door is closed.” Before it finishes, the door opens.
+
+The program records the change while the assistant is still writing. It catches the outdated answer, keeps it out of the user-facing output, and asks the assistant to respond using the new information. Any timers keep running throughout.
+
+That is the kind of behavior this project is trying to make work.
+
+There are three parts:
+
+| Part | Its job |
+|---|---|
+| The clock and event watcher | Keep track of elapsed time, deadlines, new information, and how old that information is. |
+| The language model | Read the current situation and explain it or answer a question. |
+| TimesFM, an optional time-series forecasting model | Look at changing measurements and suggest when the assistant should check again. |
+
+**The clock tells us how much time has passed. TimesFM predicts what might happen next.** The forecasting model is not needed to count seconds or enforce a deadline.
+
+## What worked in the live test
+
+We ran a test lasting about **25 seconds**. During that time, the program received **201 measurements** and called the language model **7 times**.
+
+- After a real wait, the model correctly reported the elapsed time and an expired deadline.
+- An alarm arrived while the model was writing. The program handled the alarm and a deadline without waiting for the answer to finish.
+- The outdated answer was rejected. The next answer reflected the alarm.
+- When new measurements stopped arriving, the model correctly identified the last measurement as too old.
+- TimesFM made a forecast from measurements collected during the run. The program used that forecast to schedule another check.
+
+The clock-only version passed all 10 checks in its final scripted test. The version with TimesFM passed all 12. A separate test also passed with events written to a real file while the model was generating an answer.
+
+The measurements in the main demonstration were simulated, but they arrived as real time passed. We did not feed in a complete recorded history and pretend it was live. The waits, model responses, alarms, deadlines, and answer rejection actually happened.
+
+Read the [plain-language results report](docs/live-results.md) for the measurements, failures, and limits.
+
+## What we have not proved
+
+We have built a working way to give the **combined system** current information about time. We have not taught the language model to keep its own internal clock.
+
+We have also not shown that TimesFM chooses better times to check than a simple rule or cheap predictor. The clock-only version already handles passing time, deadlines, and incoming changes. TimesFM's added value remains a research question.
+
+These were short, scripted tests. They do not establish reliability across arbitrary conversations, long-running use, or production failures. Earlier attempts gave wrong answers; those failures are retained in the repository.
+
+## Try it
+
+On the existing local setup, run:
+
+```bash
+cd /Users/rachitt/labs/temporal-bridge
+.venv/bin/python realtime.py self-test --run-dir artifacts/my-live-demo
 ```
-clock + arriving observations/events
-                │
-                ▼
- temporal state + deadline supervisor ───► live clock / deadline events
-                │
-        snapshot with validity limits
-                ▼
-       isolated frozen language model
-                │
-       revalidate before publication
-          ┌─────┴─────┐
-       current       obsolete
-       publish       reject + refresh
 
-collected stream → optional frozen TimesFM → bounded next-wake hint
-```
+This runs the demonstration with TimesFM. Add `--clock-only` to test the simpler version. Use a new output directory for each run.
 
-**Claim boundary:** this gives the combined system live temporal state. It does not add a clock to frozen model weights, demonstrate consciousness, or establish broad temporal intelligence. The first static forecasting experiment was a scope mistake; it is retained as prior exploration, not evidence of the live goal.
+<details>
+<summary>Installation and model details</summary>
 
-## Run the live prototype
-
-Python 3.12, Apple Silicon, the MLX TimesFM checkout, and a local MLX language-model checkpoint are required for the measured configuration.
+The tested setup uses Python 3.12 on an Apple Silicon Mac, a local language model, and [Rachitt's TimesFM implementation for MLX](https://github.com/rachittshah/mlx-tsfm). MLX is the software used here to run the models on the Mac.
 
 ```bash
 cd /Users/rachitt/labs/temporal-bridge
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -e '.[dev]' -e /Users/rachitt/mlx-tsfm
-
-# Actual waiting, mid-generation alarm, deadlines, expiry, and refreshed answers.
-.venv/bin/python realtime.py self-test --clock-only --run-dir artifacts/my-clock-trial
-
-# Also collect live samples, forecast them, and execute a predicted wake.
-.venv/bin/python realtime.py self-test --run-dir artifacts/my-fused-trial
-
-# Watch the machine's live load, with a real 20-second deadline.
-.venv/bin/python realtime.py watch --clock-only --seconds 60 \
-  --deadline-seconds 20 --run-dir artifacts/my-watch
 ```
 
-Use a new run directory every time. The default model is the locally cached Qwen3-4B abliterated 4-bit checkpoint at `/Users/rachitt/labs/qwen3-4b-abliterated-mlx/models/qwen3-4b-abliterated-4bit`; override with `--model /path/to/model`.
+The default language model is Qwen3-4B abliterated, stored in a compressed 4-bit format at `/Users/rachitt/labs/qwen3-4b-abliterated-mlx/models/qwen3-4b-abliterated-4bit`. To use another compatible local model, add `--model /path/to/model`.
 
-The self-test's sensor values are simulated **at real wall-clock arrivals**. No history is preloaded. Waiting, event arrival, inference, deadline dispatch and wake scheduling are real. The model receives 128 causally resampled points only after enough uninterrupted live history exists. This is a scripted integration trial, not a statistical reasoning benchmark. The final clock-only trial passed 10 checks; the final fused trial passed 12 checks over 24.69 seconds with 201 sample arrivals. See [measured results and retained traces](docs/live-results.md).
+The TimesFM implementation used during development was commit `c834636e97f98940d95e34601a17de3886bf79d3`. Its model files are pinned to revision `43046b85ec22d584a13f8098c2ed39c889e129c2` of `google/timesfm-3.0-pytorch`. The model's [non-commercial license](https://huggingface.co/google/timesfm-3.0-pytorch) applies. Model files and local caches are not stored in this repository.
 
-## Feed your own live events
+</details>
 
-Create an empty append-only file, then start the watcher. It starts at end-of-file and uses arrival times; it does not relabel a historical backlog as live data.
+<details>
+<summary>Watch your own incoming information</summary>
+
+Create an empty file and start the watcher:
 
 ```bash
 mkdir -p data
@@ -59,7 +90,7 @@ touch data/live-events.jsonl
   --seconds 120 --run-dir artifacts/my-events
 ```
 
-Append one JSON object per line from another terminal or a sensor producer:
+From another terminal or a sensor program, append one JSON object per line:
 
 ```json
 {"type":"sample","value":42.5}
@@ -67,11 +98,23 @@ Append one JSON object per line from another terminal or a sensor producer:
 {"type":"deadline","id":"follow_up","after_s":10}
 ```
 
-Omit `--clock-only` to enable TimesFM wake hints once sufficient regularly resampleable history arrives. `--change-threshold` controls which numeric changes create semantic wake events. The default is 1.0 in the stream's units; choose it for your source. The runtime also wakes on a maximum-silence timer. Source timestamps are deliberately rejected: age means time since the controller read a record, not time since a producer wrote or physically measured it. Buffered records' physical age is unknown; relative file deadlines start at ingestion. Rotation/truncation resets to the new end-of-file and can discard replacement-file records. This prototype is not a lossless event transport.
+The watcher ignores anything already in the file when it starts. Omit `--clock-only` to enable forecast-based checks after enough suitably spaced measurements arrive. `--change-threshold` sets how large a numerical change must be to trigger attention; its default is 1.0 in your measurement's units.
 
-Published output includes the narrative's snapshot time and freshly computed clock fields. Ordinary samples advance a data revision; relevant events advance the semantic revision. Observation-dependent requests can bind the data revision and freshness limit. Every pending deadline crossing is checked at publication, including between supervisor ticks.
+To watch the Mac's system load instead, leave out `--events`:
 
-## Validation and evidence
+```bash
+.venv/bin/python realtime.py watch --clock-only --seconds 60 \
+  --deadline-seconds 20 --run-dir artifacts/my-watch
+```
+
+The displayed answer is labeled with the time of the information it used. A separate clock shows the time when the answer is presented. Rejected answers stay in the diagnostic log and are not displayed as answers.
+
+There are limits to this file-based input. The program knows when it reads a record, not when someone originally wrote or measured it. A delayed record can therefore have an unknown real-world age. Relative deadlines start when the program reads them. Replacing or shortening the input file can also cause records to be missed. This is a prototype, not a guaranteed delivery system.
+
+</details>
+
+<details>
+<summary>Tests, research, and full evidence</summary>
 
 ```bash
 .venv/bin/python -m pytest -q
@@ -79,19 +122,14 @@ Published output includes the narrative's snapshot time and freshly computed clo
 git diff --check
 ```
 
-The live trials retain request snapshots, prompts, first-token timestamps, incoming events, deadline dispatches, raw completions, rejections and publication-time clocks. Failed development trials are retained too. Exact categorical grading rejects negation and ambiguous replies; a numeric elapsed-time probe is checked against the captured clock.
+The recorded verification is **91 automated tests passed**. The optional test that runs the actual model and file watcher passed separately. Code checks also passed.
 
-- [Live design and limits](docs/realtime-design.md)
-- [Measured results and evidence](docs/live-results.md)
-- [Current real-time research](docs/realtime-research.md)
-- [Independent runtime review](docs/realtime-review.md)
-- [Initial live-trial failures and review](docs/live-evidence-review.md)
-- [Earlier static study and its failure analysis](docs/failure-analysis-v1.md)
+- [Results in plain language](docs/live-results.md)
+- [Live-system design](docs/realtime-design.md)
+- [Research papers on real-time agents](docs/realtime-research.md)
+- [Independent review](docs/realtime-final-review.md)
+- [Raw records, including failed attempts](evidence/README.md)
 
-Clock-only behavior is the mandatory low-cost baseline. The prototype demonstrates that TimesFM can be connected to live scheduling; a reduction in inference calls or improvement over cheap scheduling is **not established**. There is no hard real-time operating-system guarantee.
+The earlier static forecasting experiment addressed the wrong version of the question. Its [failure analysis](docs/failure-analysis-v1.md) and [recorded results](evidence/static-v1/) are preserved for inspection. They are not evidence of a live sense of time.
 
-## Models and earlier research
-
-The TSFM source checkout used during development was `mlx-tsfm` commit `c834636e97f98940d95e34601a17de3886bf79d3`. TimesFM weights are pinned to revision `43046b85ec22d584a13f8098c2ed39c889e129c2` of `google/timesfm-3.0-pytorch`. Its [non-commercial weight license](https://huggingface.co/google/timesfm-3.0-pytorch) applies separately from the implementation. Weights and local caches are not committed.
-
-The earlier `temporal_bridge.experiment` CLI remains reproducible from its recorded source revision and manifests. Its [literature review](docs/literature.md) covers static time-series fusion, and [design](docs/design.md) records that earlier study. Those results cannot answer the corrected live-time question.
+</details>

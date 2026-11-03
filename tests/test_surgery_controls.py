@@ -241,6 +241,7 @@ def test_legacy_probe_manifest_defaults_to_raw_and_rejects_clock_features(tmp_pa
     manifest_path = dev / 'head_manifest.json'
     manifest = json.loads(manifest_path.read_text())
     assert manifest.pop('input_view') == 'raw'
+    assert manifest.pop('train_curriculum') is False
     manifest_path.write_text(json.dumps(manifest))
     args.probe_head = str(dev / 'head.npz')
     args.output = str(tmp_path / 'reuse')
@@ -257,4 +258,70 @@ def test_probe_cli_accepts_clock_features_before_output_reservation(tmp_path, mo
     monkeypatch.setattr(controls, 'reserve_output', stop)
     with pytest.raises(RuntimeError, match='accepted by parser'):
         controls.main(['probe', '--input-view', 'clock-features', '--model', 'unused',
+                       '--revision', 'r', '--output', str(tmp_path / 'out')])
+
+
+def test_curriculum_probe_uses_augmented_train_and_checks_manifest(tmp_path, monkeypatch):
+    calls = []
+    def examples(split, source):
+        return [{'id': f'{split}-{i}', 'pair_id': f'{split}-{i // 2}', 'split': split,
+                 'family': 'silence', 'state': {'now': 12.5, 'last_event': 10, 'threshold': 3},
+                 'prompt': f'{source} question {i}', 'answer': 'ABCD'[i]} for i in range(4)]
+    def build(split, pairs_per_family, seed):
+        calls.append((split, pairs_per_family, seed))
+        return examples(split, 'standard')
+    def curriculum(pairs_per_family, seed):
+        calls.append(('curriculum', pairs_per_family, seed))
+        return examples('train', 'augmented')
+    def extract(model, tokenizer, cases, limit, batch_size):
+        assert all(case['prompt'].startswith('Clock features: ') for case in cases)
+        return np.array([[float(i), float(i * i)] for i in range(len(cases))], dtype=np.float32)
+    class Model:
+        def freeze(self):
+            pass
+    monkeypatch.setattr(controls, 'build_cases', build)
+    monkeypatch.setattr(controls, 'build_curriculum_cases', curriculum)
+    monkeypatch.setattr(controls, 'extract_probe_features', extract)
+    monkeypatch.setattr(controls, 'context_limit', lambda path: 16)
+    dev = tmp_path / 'dev'
+    dev.mkdir()
+    args = Namespace(model='unused', revision='rev', seed=3, output=str(dev), split='dev',
+                     batch_size=2, pairs_per_family=2, train_pairs_per_family=7, probe_head=None,
+                     input_view='clock-features', train_curriculum=True)
+    controls.probe(Model(), None, args, {'base': 'hash'})
+    assert calls == [('curriculum', 7, 3), ('dev', 2, 3)]
+    saved = json.loads((dev / 'datasets' / 'probe_train.json').read_text())
+    assert all('augmented question' in c['prompt'] for c in saved)
+    manifest_path = dev / 'head_manifest.json'
+    manifest = json.loads(manifest_path.read_text())
+    assert manifest['train_curriculum'] is True
+    args.probe_head = str(dev / 'head.npz')
+    args.output = str(tmp_path / 'reuse')
+    (tmp_path / 'reuse').mkdir()
+    controls.probe(Model(), None, args, {'base': 'hash'})
+    args.train_curriculum = False
+    with pytest.raises(ValueError, match='curriculum'):
+        controls.probe(Model(), None, args, {'base': 'hash'})
+    del manifest['train_curriculum']
+    manifest_path.write_text(json.dumps(manifest))
+    controls.probe(Model(), None, args, {'base': 'hash'})
+    args.train_curriculum = True
+    with pytest.raises(ValueError, match='curriculum'):
+        controls.probe(Model(), None, args, {'base': 'hash'})
+
+
+@pytest.mark.parametrize('command', ['retention', 'robustness'])
+def test_train_curriculum_is_rejected_for_other_commands(tmp_path, command):
+    with pytest.raises(SystemExit):
+        controls.main([command, '--train-curriculum', '--model', 'unused',
+                       '--revision', 'r', '--output', str(tmp_path / 'out')])
+    assert not (tmp_path / 'out').exists()
+
+
+def test_probe_cli_accepts_train_curriculum_before_loading(tmp_path, monkeypatch):
+    def stop(path):
+        raise RuntimeError('accepted by parser')
+    monkeypatch.setattr(controls, 'reserve_output', stop)
+    with pytest.raises(RuntimeError, match='accepted by parser'):
+        controls.main(['probe', '--train-curriculum', '--model', 'unused',
                        '--revision', 'r', '--output', str(tmp_path / 'out')])

@@ -3,6 +3,9 @@
 Every use of a shared model must go through this context, including ordinary
 language requests. Do not share it with code that bypasses the gate or with
 asynchronous tasks that can interleave contexts on the same thread.
+Use a fresh attention cache for each request; never carry a cache across modes.
+Materialize lazy MLX results before leaving the context, and do not reuse compiled
+graphs that captured a different adapter scale.
 """
 
 from __future__ import annotations

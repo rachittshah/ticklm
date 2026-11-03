@@ -17,6 +17,7 @@ from .surgery import (
     base_identity,
     context_limit,
     evaluate_cases,
+    inspect_model,
     load_adapter,
     reserve_output,
     runtime_provenance,
@@ -142,7 +143,11 @@ def main(argv=None):
     parser.add_argument("--threshold-s", type=float, default=1.5)
     parser.add_argument("--cancel-delay-s", type=float, default=0.005)
     parser.add_argument("--input-view", choices=("raw", "clock-features"), default="raw")
+    parser.add_argument("--gated", action="store_true",
+                        help="Enable adapter for live decisions; disable it for ordinary generation on the same model")
     args = parser.parse_args(argv)
+    if args.gated and not args.adapter:
+        parser.error("--gated requires an adapter")
     output = Path(args.output)
     reserve_output(output)
     identity = base_identity(args.model)
@@ -154,9 +159,21 @@ def main(argv=None):
         "runtime": runtime_provenance(),
         "live_source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     })
-    records, summary = run_live(model, tokenizer, context_limit(args.model),
-                                threshold_s=args.threshold_s, cancel_delay_s=args.cancel_delay_s,
-                                input_view=args.input_view)
+    def evaluate_live():
+        return run_live(model, tokenizer, context_limit(args.model), threshold_s=args.threshold_s,
+                        cancel_delay_s=args.cancel_delay_s, input_view=args.input_view)
+
+    if args.gated:
+        from .surgery_gate import adapter_mode
+        with adapter_mode(model, enabled=True):
+            records, summary = evaluate_live()
+        with adapter_mode(model, enabled=False):
+            inspect_model(model, tokenizer, output / "general")
+        summary["routing"] = "explicit temporal adapter on; ordinary generation adapter off; one shared base model"
+        summary["general_generation_path"] = "general/generation.json"
+    else:
+        records, summary = evaluate_live()
+        summary["routing"] = "ungated"
     write_records(output / "cases.jsonl", records)
     atomic_json(output / "summary.json", summary)
 

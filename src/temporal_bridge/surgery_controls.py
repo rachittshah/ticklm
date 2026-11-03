@@ -34,7 +34,12 @@ from .surgery import (
     save_dataset,
     write_records,
 )
-from .surgery_data import build_cases, build_robustness_cases, deterministic_answer
+from .surgery_data import (
+    build_cases,
+    build_curriculum_cases,
+    build_robustness_cases,
+    deterministic_answer,
+)
 from .surgery_features import with_feature_view
 
 _PASSAGES = {
@@ -221,6 +226,7 @@ def probe(model, tokenizer, args, identity):
     model.freeze()
     data_hash = hashlib.sha256(Path(__file__).with_name("surgery_data.py").read_bytes()).hexdigest()
     input_view = getattr(args, "input_view", "raw")
+    train_curriculum = getattr(args, "train_curriculum", False)
     if args.probe_head:
         head_path = Path(args.probe_head)
         manifest = json.loads(head_path.with_name("head_manifest.json").read_text())
@@ -229,13 +235,17 @@ def probe(model, tokenizer, args, identity):
             raise ValueError("probe head base, revision, data code, or seed does not match")
         if manifest.get("input_view", "raw") != input_view:
             raise ValueError("probe head input view does not match")
+        if manifest.get("train_curriculum", False) != train_curriculum:
+            raise ValueError("probe head training curriculum does not match")
         if hashlib.sha256(head_path.read_bytes()).hexdigest() != manifest["head_sha256"]:
             raise ValueError("probe head hash does not match manifest")
         with np.load(head_path, allow_pickle=False) as saved:
             head = {k: saved[k] for k in ("mean", "scale", "weight", "bias")}
     else:
-        train = with_feature_view(
-            build_cases("train", pairs_per_family=args.train_pairs_per_family, seed=args.seed), input_view)
+        train = (build_curriculum_cases(pairs_per_family=args.train_pairs_per_family, seed=args.seed)
+                 if train_curriculum else
+                 build_cases("train", pairs_per_family=args.train_pairs_per_family, seed=args.seed))
+        train = with_feature_view(train, input_view)
         require_split(train, "train")
         save_dataset(output, "probe_train", train)
         train_features = extract_probe_features(model, tokenizer, train, limit, args.batch_size)
@@ -244,7 +254,7 @@ def probe(model, tokenizer, args, identity):
         head = fit_probe(train_features, labels)
         atomic_npz(output / "head.npz", head)
         manifest = {"base_hashes": identity, "revision": args.revision, "seed": args.seed,
-                    "input_view": input_view,
+                    "input_view": input_view, "train_curriculum": train_curriculum,
                     "data_source_sha256": data_hash, "training_split": "train",
                     "train_pairs_per_family": args.train_pairs_per_family,
                     "training_cases": len(train), "steps": 400, "learning_rate": .03,
@@ -291,6 +301,8 @@ def main(argv=None):
     parser.add_argument("--seed", type=int, default=1103)
     parser.add_argument("--input-view", choices=["raw", "clock-features"], default="raw")
     parser.add_argument("--train-pairs-per-family", type=int, default=128)
+    parser.add_argument("--train-curriculum", action="store_true",
+                        help="Fit the probe on augmented curriculum pairs")
     parser.add_argument("--probe-head", help="Previously saved head.npz; required for probe test")
     args = parser.parse_args(argv)
     if args.batch_size <= 0 or args.pairs_per_family <= 0 or args.train_pairs_per_family <= 0:
@@ -301,6 +313,8 @@ def main(argv=None):
         parser.error("probe test requires --probe-head; dev trains a new head")
     if args.command != "probe" and args.probe_head:
         parser.error("--probe-head applies only to probe")
+    if args.command != "probe" and args.train_curriculum:
+        parser.error("--train-curriculum applies only to probe")
     if args.command == "retention" and args.input_view != "raw":
         parser.error("retention requires raw input")
     started = perf_counter()

@@ -71,6 +71,18 @@ def export(root, destination, *, preflights=None):
                     _audit(json.loads(line), path)
         elif path.suffix in {".txt", ".log"} and _SECRET_VALUE.search(path.read_text()):
             raise ValueError(f"credential-like log content in {path.name}")
+    for kind in ("runs", "live"):
+        for path in (root / kind).glob("*/manifest.json"):
+            manifest = json.loads(path.read_text())
+            if manifest.get("status") in (None, "running"):
+                raise ValueError(f"unfinished run cannot be published: {path.parent.name}")
+            hashes = dict(manifest.get("artifact_sha256", {}))
+            if manifest.get("records_sha256"):
+                hashes["records.jsonl"] = manifest["records_sha256"]
+            for name, expected in hashes.items():
+                artifact = path.parent / name
+                if not artifact.resolve().is_relative_to(path.parent.resolve()) or digest(artifact) != expected:
+                    raise ValueError(f"run evidence hash mismatch: {path.parent.name}")
     destination.mkdir(parents=True, exist_ok=False)
     archive = destination / "ticklm-bench-v0.1-evidence.tar.gz"
     with tarfile.open(archive, "w:gz") as bundle:

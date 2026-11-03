@@ -27,3 +27,12 @@ def test_export_rejects_secret_before_creating_publication(tmp_path):
     with pytest.raises(ValueError, match="credential-like"):
         export(root, tmp_path / "published")
     assert not (tmp_path / "published").exists()
+
+
+def test_export_refuses_inflight_runs(tmp_path):
+    root = tmp_path / "raw"
+    (root / "runs/one").mkdir(parents=True)
+    (root / "runs/one/manifest.json").write_text('{"status":"running"}')
+    with pytest.raises(ValueError, match="unfinished run"):
+        export(root, tmp_path / "published")
+    assert not (tmp_path / "published").exists()

@@ -8,17 +8,23 @@ This is an exploratory first release, dated **3 November 2026**. The [measured r
 
 ```mermaid
 flowchart LR
-    C["Computer clock\nMonotonic elapsed time"] --> S["Current state\nDeadline + event version"]
-    E["Scheduled events\nAlarm, clear, revision"] --> S
-    S --> R["Raw facts\nModel does the arithmetic"]
-    S --> D["Derived facts\nPrimitive arithmetic supplied"]
-    R --> M["Model + recorded runtime\nFresh conversation"]
+    C["Computer clock<br/>Monotonic elapsed time"] --> S["Current state<br/>Deadline + event version"]
+    E["Scheduled events<br/>Alarm, clear, revision"] --> S
+    S --> R["Raw facts<br/>Model does the arithmetic"]
+    S --> D["Derived facts<br/>Primitive arithmetic supplied"]
+    R --> M["Model + recorded runtime<br/>Fresh conversation"]
     D --> M
-    M --> A["Answer + timestamps\nRaw response retained"]
-    A --> Q["Reasoning score\nWas it right at dispatch?"]
-    A --> F["Freshness check\nDid state change before completion?"]
-    F --> T["Time in force\nCorrect / wrong / undecided"]
+    M --> A["Answer + timestamps<br/>Raw response retained"]
+    A --> Q["Reasoning score<br/>Was it right at dispatch?"]
+    A --> F["Freshness check<br/>Did state change before completion?"]
+    F --> T["Time in force<br/>Correct / wrong / undecided"]
     S --> F
+    classDef state fill:#e8f3f4,stroke:#287b80,color:#163e41
+    classDef model fill:#eee9f8,stroke:#7655a8,color:#372451
+    classDef evidence fill:#fff2d9,stroke:#b58427,color:#5f471a
+    class C,E,S,F state
+    class M model
+    class A,Q,T evidence
 ```
 
 ## What the models are asked to do

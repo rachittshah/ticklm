@@ -30,15 +30,18 @@ def _audit(value, path):
 def export(root, destination, *, preflights=None):
     root, destination = Path(root), Path(destination)
     selected = []
-    for name in ("frozen", "frozen-micro", "runs", "live", "provision", "source-recovery", "preflights"):
+    for name in ("frozen", "frozen-micro", "runs", "live", "provision", "source-recovery",
+                 "preflights", "local-preflight", "verification"):
         directory = root / name
         if directory.exists():
             selected.extend((p, str(p.relative_to(root))) for p in directory.rglob("*")
-                            if p.is_file() and p.suffix in {".json", ".jsonl", ".md", ".py"})
+                            if p.is_file() and p.suffix in {".json", ".jsonl", ".md", ".py", ".log", ".txt"})
     catalog = root / "catalog/catalog.json"
     if catalog.exists():
         selected.append((catalog, "catalog/catalog.json"))
-    for name in ("budget-summary.json", "native-micro-plan.json"):
+    for name in ("budget-summary.json", "native-micro-plan.json", "local-runtime-plan.json",
+                 "llamacpp-runtime-plan.json", "llamacpp-models.json", "llamacpp-direct-dev-check.json",
+                 "ollama-direct-dev-check.json", "ollama-unload.json", "llamacpp-server.log"):
         path = root / name
         if path.exists():
             selected.append((path, name))

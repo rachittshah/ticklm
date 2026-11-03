@@ -38,6 +38,20 @@ def export(root, destination, *, preflights=None):
     catalog = root / "catalog/catalog.json"
     if catalog.exists():
         selected.append((catalog, "catalog/catalog.json"))
+    for name in ("budget-summary.json", "native-micro-plan.json"):
+        path = root / name
+        if path.exists():
+            selected.append((path, name))
+    external = root / "external/sdb"
+    allowlist = external / "release-allowlist.txt"
+    if allowlist.exists():
+        for name in allowlist.read_text().splitlines():
+            if not name.strip():
+                continue
+            path = external / name
+            if not path.resolve().is_relative_to(external.resolve()) or not path.is_file():
+                raise ValueError("invalid external evidence allowlist")
+            selected.append((path, "external/sdb/" + name))
     for path in sorted(root.glob("execution-*.tar")):
         selected.append((path, path.name))
     if preflights:
@@ -55,7 +69,7 @@ def export(root, destination, *, preflights=None):
             for line in path.read_text().splitlines():
                 if line.strip():
                     _audit(json.loads(line), path)
-        elif path.suffix == ".txt" and _SECRET_VALUE.search(path.read_text()):
+        elif path.suffix in {".txt", ".log"} and _SECRET_VALUE.search(path.read_text()):
             raise ValueError(f"credential-like log content in {path.name}")
     destination.mkdir(parents=True, exist_ok=False)
     archive = destination / "ticklm-bench-v0.1-evidence.tar.gz"

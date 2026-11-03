@@ -17,6 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest==9.2.0", "ruff==0.17.3"]
+report = ["matplotlib==3.11.2"]
 
 [project.scripts]
 temporal-bridge = "temporal_bridge.experiment:main"

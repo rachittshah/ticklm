@@ -9,20 +9,26 @@ description = "Reproducible frozen TSFM and LLM temporal-evidence experiment"
 requires-python = ">=3.12"
 dependencies = [
   "numpy==2.5.4",
-  "mlx==0.32.4",
-  "mlx-lm==0.32.2",
+  "mlx==0.32.4; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "mlx-lm==0.32.2; sys_platform == 'darwin' and platform_machine == 'arm64'",
   "huggingface-hub==2.3.0",
   "safetensors==0.8.0",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest==9.2.0", "ruff==0.17.3"]
+report = ["matplotlib==3.11.2"]
 
 [project.scripts]
 temporal-bridge = "temporal_bridge.experiment:main"
+ticklm-bench = "ticklm_bench.runner:main"
+ticklm-catalog = "ticklm_bench.catalog:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/temporal_bridge"]
+packages = ["src/temporal_bridge", "src/ticklm_bench"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"benchmarks/ticklm-v0.1/LICENSE" = "ticklm_bench/LICENSE"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

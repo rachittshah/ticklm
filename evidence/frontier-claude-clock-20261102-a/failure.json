@@ -1,0 +1,570 @@
+{
+  "run_id": "frontier-claude-clock-20261102-a",
+  "provider": "claude",
+  "error": "RuntimeError: One or more live checks failed; inspect retained trace",
+  "elapsed_wall_s": 46.55156929100485,
+  "model_metadata": {
+    "provider": "claude",
+    "cli_version": "2.1.316",
+    "requested_model": "claude-opus-5-5",
+    "requested_effort": "xhigh",
+    "launcher_profile": "startup",
+    "max_tokens_enforcement": "not_enforced"
+  },
+  "results": {
+    "frozen_clock": {
+      "type": "result",
+      "request_id": "frontier-claude-clock-20261102-a:frozen_clock",
+      "monotonic": 52732.84836425,
+      "text": "PENDING",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1447,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3743,
+      "output_tokens": 90,
+      "finish_reason": "end_turn",
+      "elapsed_s": 5.624009334002039,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.013842799999999999,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 12,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": true,
+      "snapshot_elapsed_s": 4.004355500001111,
+      "answer_as_of_mono": 52727.223381375,
+      "answer_as_of_utc": "2026-11-02T17:30:24.624Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-clock-20261102-a",
+        "revision": 3,
+        "data_revision": 91,
+        "wall_utc": "2026-11-02T17:30:30.252Z",
+        "start_wall_utc": "2026-11-02T17:30:20.619Z",
+        "elapsed_s": 9.63289362499927,
+        "now_mono": 52732.8519195,
+        "observation": {
+          "value": 54.43337203209022,
+          "age_s": 0.05603679199703038,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 6.632647083999473,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 9.632657416994334,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 6.629456124996068,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 6.629456124996068
+      }
+    },
+    "fresh_clock": {
+      "type": "result",
+      "request_id": "frontier-claude-clock-20261102-a:fresh_clock",
+      "monotonic": 52737.103176291,
+      "text": "EXPIRED",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1528,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3824,
+      "output_tokens": 8,
+      "finish_reason": "end_turn",
+      "elapsed_s": 4.2508097500031,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.0128508,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 12,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 9.633034375001444,
+      "answer_as_of_mono": 52732.85206025,
+      "answer_as_of_utc": "2026-11-02T17:30:30.252Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-clock-20261102-a",
+        "revision": 3,
+        "data_revision": 131,
+        "wall_utc": "2026-11-02T17:30:34.515Z",
+        "start_wall_utc": "2026-11-02T17:30:20.619Z",
+        "elapsed_s": 13.895381333000842,
+        "now_mono": 52737.114407208,
+        "observation": {
+          "value": 52.53087733440604,
+          "age_s": 0.07705675000033807,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 10.895134792001045,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 13.895145124995906,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 10.89194383299764,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 10.89194383299764
+      }
+    },
+    "elapsed_number": {
+      "type": "result",
+      "request_id": "frontier-claude-clock-20261102-a:elapsed_number",
+      "monotonic": 52740.9673455,
+      "text": "13.896",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1525,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3821,
+      "output_tokens": 34,
+      "finish_reason": "end_turn",
+      "elapsed_s": 3.8525026250063092,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.0133468,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 12,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 13.89550962499925,
+      "answer_as_of_mono": 52737.1145355,
+      "answer_as_of_utc": "2026-11-02T17:30:34.515Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-clock-20261102-a",
+        "revision": 3,
+        "data_revision": 168,
+        "wall_utc": "2026-11-02T17:30:38.373Z",
+        "start_wall_utc": "2026-11-02T17:30:20.619Z",
+        "elapsed_s": 17.753453875004197,
+        "now_mono": 52740.97247975,
+        "observation": {
+          "value": 51.54883355347949,
+          "age_s": 0.0331756250016042,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 14.7532073340044,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 17.753217666999262,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 14.750016375000996,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 14.750016375000996
+      }
+    },
+    "race": {
+      "type": "result",
+      "request_id": "frontier-claude-clock-20261102-a:race",
+      "monotonic": 52761.105497625,
+      "text": "1. The system is currently in NORMAL mode, according to the current facts (`{\"mode\": \"NORMAL\"}`).\n2. That mode came from a mode event with payload `{\"value\":\"NORMAL\"}`, observed 17.753 seconds ago, which is about 0.001 seconds after the run started 17.754 seconds ago by the monotonic clock.\n3. No later mode event appears in the supplied situation, so NORMAL has been the only reported mode for almost the whole run.\n4. The latest measurement is 51.54883355347949, observed 0.033 seconds ago, which is well within the 1.000-second freshness limit, so it is correctly marked FRESH.\n5. The \"probe\" deadline has EXPIRED: its scheduled time passed 14.753 seconds ago, about 3.001 seconds into the run.\n6. Its `deadline_due` event (`deadline_id` \"probe\") was observed 14.750 seconds ago, about 0.003 seconds after the scheduled time, and the runtime confirms that the event was delivered.\n7. The probe deadline has therefore already been handled, and the supplied situation lists no other pending deadline.\n8. The situation gives no units, expected range or alarm thresholds for the measurement, so this plan doesn't judge whether 51.54883355347949 is high or low.\n9. First, on every update, check how old the latest measurement is and mark it stale as soon as that age goes over 1.000 seconds.\n10. Second, measure ages and gaps with the monotonic elapsed-time clock rather than the UTC wall-clock reading (2026-11-02T17:30:38.373Z), so that changes to the wall clock can't distort freshness or deadline checks.\n11. Third, watch for new mode events and change the current mode only when a new payload arrives, rather than assuming NORMAL will continue indefinitely.\n12. Fourth, record that the probe deadline has expired and its event was delivered so it isn't handled twice, and keep watching for any new `deadline_due` events.",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1544,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3840,
+      "output_tokens": 1979,
+      "finish_reason": "end_turn",
+      "elapsed_s": 20.132569375004095,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.0523988,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 200,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": false,
+      "snapshot_elapsed_s": 17.753590416003135,
+      "answer_as_of_mono": 52740.972616291,
+      "answer_as_of_utc": "2026-11-02T17:30:38.373Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-clock-20261102-a",
+        "revision": 6,
+        "data_revision": 357,
+        "wall_utc": "2026-11-02T17:30:58.516Z",
+        "start_wall_utc": "2026-11-02T17:30:20.619Z",
+        "elapsed_s": 37.896433416004584,
+        "now_mono": 52761.115459291,
+        "observation": {
+          "value": 67.32630901129895,
+          "age_s": 0.00025529100093990564,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 34.89618687500479,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 5.278543541004183,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 37.89619720799965,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 34.89299591600138,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 5.528557875004481,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 5.2749951660007355,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 5.2749951660007355
+      }
+    },
+    "refresh": {
+      "type": "result",
+      "request_id": "frontier-claude-clock-20261102-a:refresh",
+      "monotonic": 52764.698786333,
+      "text": "ALARM; EXPIRED",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1680,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3976,
+      "output_tokens": 13,
+      "finish_reason": "end_turn",
+      "elapsed_s": 3.5827825000014855,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.0141668,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 20,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 37.89661108300061,
+      "answer_as_of_mono": 52761.115636958,
+      "answer_as_of_utc": "2026-11-02T17:30:58.516Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-clock-20261102-a",
+        "revision": 6,
+        "data_revision": 390,
+        "wall_utc": "2026-11-02T17:31:02.104Z",
+        "start_wall_utc": "2026-11-02T17:30:20.619Z",
+        "elapsed_s": 41.484397125001124,
+        "now_mono": 52764.703423,
+        "observation": {
+          "value": 65.94862472031613,
+          "age_s": 0.05873770899779629,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 38.48415058400133,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 8.866507250000723,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 41.48416091699619,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 38.48095962499792,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 9.11652158400102,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 8.862958874997275,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 8.862958874997275
+      }
+    },
+    "freshness": {
+      "type": "result",
+      "request_id": "frontier-claude-clock-20261102-a:freshness",
+      "monotonic": 52769.756115166,
+      "text": "STALE",
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1647,
+      "cache_read_input_tokens": 2294,
+      "input_tokens_total": 3943,
+      "output_tokens": 37,
+      "finish_reason": "end_turn",
+      "elapsed_s": 3.4415800420028972,
+      "model": "claude-opus-5-5",
+      "resolved_model": "claude-opus-5-5",
+      "models_used": [
+        "claude-opus-5-5"
+      ],
+      "provider": "claude",
+      "requested_model": "claude-opus-5-5",
+      "estimated_cost_usd": 0.014382800000000001,
+      "cost_is_estimate": true,
+      "requested_effort": "xhigh",
+      "requested_max_tokens": 12,
+      "max_tokens_enforcement": "not_enforced",
+      "valid": false,
+      "validity_reason": "observation_changed",
+      "control_only": false,
+      "snapshot_elapsed_s": 43.094930750005005,
+      "answer_as_of_mono": 52766.313956625,
+      "answer_as_of_utc": "2026-11-02T17:31:03.714Z",
+      "live_publication_clock": {
+        "run_id": "frontier-claude-clock-20261102-a",
+        "revision": 7,
+        "data_revision": 409,
+        "wall_utc": "2026-11-02T17:31:07.162Z",
+        "start_wall_utc": "2026-11-02T17:30:20.619Z",
+        "elapsed_s": 46.542435125003976,
+        "now_mono": 52769.761461,
+        "observation": {
+          "value": 67.17211795899479,
+          "age_s": 0.08278366699960316,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 43.54218858400418,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 13.924545250003575,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 43.538997625000775,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 14.174559584003873,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 13.920996875000128,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 5.0578801250012475,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 5.0578801250012475
+      }
+    }
+  },
+  "race": {
+    "first_token_mono": 52755.576173083,
+    "alarm_mono": 52755.586910708,
+    "urgent_due_mono": 52755.83691575
+  },
+  "deadlines": [
+    {
+      "run_id": "frontier-claude-clock-20261102-a",
+      "deadline_id": "probe",
+      "scheduled_mono": 52726.219272416,
+      "fired_at_mono": 52726.222463375,
+      "lateness_s": 0.003190959003404714,
+      "wall_utc": "2026-11-02T17:30:23.623Z",
+      "revision": 3
+    },
+    {
+      "run_id": "frontier-claude-clock-20261102-a",
+      "deadline_id": "urgent",
+      "scheduled_mono": 52755.83691575,
+      "fired_at_mono": 52755.840464125,
+      "lateness_s": 0.0035483750034472905,
+      "wall_utc": "2026-11-02T17:30:53.241Z",
+      "revision": 6
+    }
+  ],
+  "samples_ingested": 409
+}

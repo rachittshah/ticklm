@@ -6,7 +6,11 @@ The idea is simple: an assistant should notice that a deadline has passed, that 
 
 TickLM adds a small program around a language model. That program watches the clock and incoming information, tells the model when it needs to respond, and checks whether its answer is still usable before showing it.
 
-It runs locally. Neither the language model nor the forecasting model was retrained.
+The controller and TimesFM run locally. Language responses can come from local Qwen, Claude Code, or Codex. The live experiments described below used frozen models.
+
+**TickLM-Bench v0.1, 3 November 2026:** **2,436 static attempts across 19 model/harness configurations**, plus **406 live requests over twelve real-clock trajectories**, separate temporal reasoning, output-format compliance, client overhead, and answer freshness. Read the [human-readable report and figures](benchmarks/ticklm-v0.1/report.md), [benchmark guide and Mermaid diagram](benchmarks/ticklm-v0.1/README.md), [frozen protocol](benchmarks/ticklm-v0.1/preregistration.md), and [research journey](docs/benchmark-journey.md). The [external validation](docs/benchmark-external-validation.md) reproduces StreamDecisionBench's scorer on the authors' recording; it is not a new model result on that benchmark. This is an exploratory first release, not an established state-of-the-art ranking.
+
+**New experiment, 3 November 2026: TickLM TimePatch.** A small trained adapter for **Qwen3-0.6B** answered all 256 held-out questions and all 128 counterfactual pairs correctly within four trained policies, using durations calculated by an external program. It also made five correct decisions in a short real-clock replay. It failed a reversed-rule test and damaged ordinary arithmetic when active, so the prototype explicitly disables the adapter for ordinary language requests. Read the [results and limitations](docs/weight-surgery-results.md), [research journey](docs/weight-surgery-journey.md), [experiment plan](docs/weight-surgery-plan.md), and [evidence index](evidence/weight-surgery-20261103/journey-index.json). This is a temporal-policy specialist with an external clock; TimesFM and the 17M decision model were not fused in this intervention.
 
 ## What this looks like
 
@@ -18,12 +22,13 @@ That is the kind of behavior this project is trying to make work.
 
 ## Which models did we use?
 
-Both models ran locally on an **Apple M4 Max**, using MLX, Apple's software for running models on Apple Silicon. Neither model was retrained for this experiment.
+The original experiment ran Qwen and TimesFM locally on an **Apple M4 Max**, using MLX, Apple's software for running models on Apple Silicon. We subsequently ran the same live test protocol through Claude Code and Codex, whose language models respond through their cloud services.
 
 | Part | Exact implementation | Its job |
 |---|---|---|
 | Clock and event watcher | Python's `time.monotonic()` and our `TemporalState` program | Calculate elapsed time, track deadlines and incoming changes, and check whether an answer is still usable. |
 | Language model | **Qwen3-4B abliterated**, stored in a compressed 4-bit format | Read a supplied account of the current time and situation, then answer questions about it. |
+| Frontier alternatives | **`claude-opus-5-5`** through `cca startup`, or **`gpt-6-astra`** through Codex | Answer the same scripted questions from supplied snapshots while the local clock keeps running. |
 | Optional forecasting model | **Google TimesFM 3.0**, checkpoint `google/timesfm-3.0-pytorch`, run through [Rachitt's MLX implementation](https://github.com/rachittshah/mlx-tsfm) | Predict future numerical measurements so the program can choose when to ask Qwen to check again. |
 
 **The clock tells us how much time has passed. TimesFM predicts what might happen next.** The forecasting model is not needed to count seconds or enforce a deadline.
@@ -33,13 +38,13 @@ flowchart TB
     subgraph LIVE["Keeps running while the models work"]
         direction LR
         clock["Python monotonic clock<br/>Elapsed time and deadlines"]
-        stream["Live readings and events<br/>201 simulated readings"]
+        stream["Live readings and events<br/>Timestamp each arrival"]
         state["Current time and situation<br/>Latest reading, age, events"]
         clock --> state
         stream --> state
     end
 
-    state -->|"Send current snapshot"| llm["Qwen3-4B abliterated<br/>4-bit · Answer from snapshot"]
+    state -->|"Send current snapshot"| llm["Qwen, Claude, or Codex<br/>Answer from snapshot"]
     llm --> guard{"Still valid?"}
     state -->|"Check changes and expiry"| guard
     guard -->|Yes| show["Show answer<br/>Label snapshot time"]
@@ -47,7 +52,7 @@ flowchart TB
     retry --> state
 
     stream -.->|"128 values, 0.1 seconds apart"| tsfm["TimesFM 3.0 · optional<br/>Predict the next 64 values"]
-    tsfm -.-> policy["Schedule next check<br/>1.1 seconds in this run"]
+    tsfm -.-> policy["Schedule next check<br/>Bounded forecast-based timer"]
     policy -.->|"Set timer; events act independently"| state
 
     style LIVE fill:#f8fafc,stroke:#cbd5e1,color:#172b4d
@@ -63,11 +68,24 @@ flowchart TB
     class show output
 ```
 
-The dashed path is the optional forecast-based timer. TimesFM does not calculate elapsed time, and its forecast is not fed into Qwen as a learned representation. In this prototype, it changes **when Qwen is called**. The clock and event watcher supply **what Qwen knows about time**.
+The dashed path is the optional forecast-based timer. TimesFM does not calculate elapsed time, and its forecast is not fed into the language model as a learned representation. In this prototype, it changes **when the language model is called**. The clock and event watcher supply **what that model knows about time**.
+
+## What happened with Claude Code and Codex?
+
+Both clients completed a clock-only trial and a TimesFM-assisted trial. All four graded answers were correct in every trial, but some arrived too late to publish under the existing timing rules.
+
+| Client | Observed model | Clock-only trial | With TimesFM | Publishable graded answers |
+|---|---|---|---|---|
+| Claude Code through `cca startup` | `claude-opus-5-5` | 46.54 seconds, 409 readings | 58.17 seconds, 515 readings | 3 of 4 in each run |
+| Codex | `gpt-6-astra` | 71.66 seconds, 650 readings | 143.03 seconds, 1,328 readings | 2 of 4 in each run |
+
+In all four runs, an alarm and a deadline were handled while answer text was streaming; the old answer was rejected, and a refreshed `ALARM; EXPIRED` answer was published. Both TimesFM timers also fired and started another call. **None of the frontier runs passed the complete freshness test.** In particular, both models correctly answered `STALE` about a snapshot after new measurements had already arrived. Both forecast-triggered status reports also expired before publication; they are outside the four graded answers in the table.
+
+These are single scripted trials with `xhigh` effort requested, different client overhead and different live input sequences. The durations are not a general model ranking or evidence of a TimesFM speedup. Read the [frontier results and raw evidence](docs/frontier-results.md) for timings, failures, token accounting and reproduction commands.
 
 ## What exactly did we measure?
 
-The final combined test ran for **24.69 seconds after model warmup**, received **201 simulated numerical readings**, made **7 calls to Qwen**, and made **1 TimesFM forecast**. These counts describe one scripted run, not 201 independent tests.
+The **original local Qwen-and-TimesFM test** ran for **24.69 seconds after model warmup**, received **201 simulated numerical readings**, made **7 calls to Qwen**, and made **1 TimesFM forecast**. These counts describe one scripted run, not 201 independent tests.
 
 ### 1. Time between point A and point B
 
@@ -97,7 +115,7 @@ By the time TimesFM was called, **185 readings** had arrived. The program used r
 
 TimesFM took **67.39 milliseconds** for that forecast. A cheap predictor fitted to the recent numerical history took **3.71 milliseconds** and suggested **1.3 seconds**. We executed the TimesFM timer; we did not establish that its suggestion was more accurate or saved computation.
 
-The final version without TimesFM passed **10 of 10 scripted checks**; the version with TimesFM passed **12 of 12**. A separate test also passed with events written to a real file during generation. The [results report](docs/live-results.md) explains each measurement, the actual timeout limits, model identities, and links to the recorded prompts and answers.
+The final local Qwen trial without TimesFM passed **10 of 10 scripted checks**; its version with TimesFM passed **12 of 12**. A separate test also passed with events written to a real file during generation. The [local results report](docs/live-results.md) explains each measurement, the actual timeout limits, model identities, and links to the recorded prompts and answers.
 
 **Timing clarification:** the retained run lasted 24.69 seconds. Its safety limits were 90 seconds for model warmup after worker launch and 70 seconds for the live test; neither limit was reached. We have no retained evidence of a 21-minute timeout or a 21-minute live test.
 
@@ -111,7 +129,25 @@ These were short, scripted tests. They do not establish reliability across arbit
 
 ## Try it
 
-On the existing local setup, run:
+TickLM can use **Claude Code through `cca startup`** or **Codex**, using their existing local sign-ins. Start with the clock and event tests:
+
+```bash
+.venv/bin/python realtime.py self-test --provider claude \
+  --model claude-opus-5-5 --claude-profile startup --effort xhigh \
+  --clock-only --trial-timeout-s 240 --run-dir artifacts/my-claude-trial
+
+.venv/bin/python realtime.py self-test --provider codex \
+  --model gpt-6-astra --effort xhigh \
+  --clock-only --trial-timeout-s 240 --run-dir artifacts/my-codex-trial
+```
+
+Use a new output directory for every run. Omit `--clock-only` to include the local TimesFM model. The same `--provider` options also work with the `watch` command below.
+
+These runs use fresh conversations and record the model identity reported by the client. Claude launches through the `startup` account with `--safe` and `--safe-mode`; Codex uses its streaming app server. Timings include client startup, network delays and model response time. The clients do not enforce this experiment's requested output-token caps.
+
+The 240-second limit allows a longer test after warmup. It **does not extend** the normal six-second answer validity window, the one-second measurement freshness rule, or either deadline. A correct but outdated answer is retained in the diagnostic record and rejected from publication. Inspect `answer_correctness`, `publication_checks` and `response_measurements` separately in the saved summary.
+
+To run the original local Qwen model on the existing setup:
 
 ```bash
 cd /Users/rachitt/labs/temporal-bridge
@@ -181,9 +217,10 @@ There are limits to this file-based input. The program knows when it reads a rec
 git diff --check
 ```
 
-The recorded verification is **91 automated tests passed**. The optional test that runs the actual model and file watcher passed separately. Code checks also passed.
+The latest verification is **127 automated tests passed, 1 skipped**. The skipped test is the opt-in local model/file-watcher test, which passed separately during the original local experiment. All four frontier trials were actually executed and their failed freshness checks are retained. Code checks also passed.
 
 - [Results in plain language](docs/live-results.md)
+- [Claude Code and Codex results](docs/frontier-results.md)
 - [Live-system design](docs/realtime-design.md)
 - [Research papers on real-time agents](docs/realtime-research.md)
 - [Independent review](docs/realtime-final-review.md)

@@ -1,0 +1,12 @@
+{
+  "system_id": "qwen3-06b-q4km-opencode-ollama",
+  "track": "native-local-client",
+  "type": "opencode",
+  "model": "ollama/qwen3:0.6b",
+  "revision": "sha256:3bae9c93586b27bedaa979979733c2b0edd1d0defc745e9638f2161192a0ccf0",
+  "quantization": "GGUF Q4_K_M",
+  "max_tokens": 256,
+  "timeout_s": 120,
+  "paid": false,
+  "accounting_note": "Isolated local-only client; generation cap and internal request count are not controlled."
+}

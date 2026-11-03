@@ -1,0 +1,17 @@
+# Independent review and corrections
+
+On 3 November 2026, a second review ran through `cca startup`, requesting and resolving to **claude-fable-5-1**, with `xhigh` effort requested. It completed in **301.318 seconds**; its reported cost estimate was **$1.48018875**. This is a model critique of a supplied evidence packet, not an independent replication or literature search. The exact prompt and response are retained locally as `fable-results-review-prompt.txt` and `fable-results-review.json`, and will be included with the completed evidence export.
+
+The strongest useful recommendation was to test new rule semantics without training again: reverse a threshold direction and introduce a two-sided window. Our paired tests demonstrate sensitivity to changed values within four trained policies; they do not by themselves demonstrate that the model follows arbitrary temporal instructions. This extra diagnostic is specified before final model evaluation, after the primary checkpoint was locked, and cannot be used to tune or replace that checkpoint.
+
+The review also correctly emphasized ordinary-generation regressions, the limited scope of synthetic tests, and the role of explicit routing. A deterministic program already solves these toy policies perfectly. The experiment tests whether a small adapter can make a language model use supplied time measurements; it does not establish deployment value over those rules.
+
+Some statements in the review require correction:
+
+- **Low paired accuracy does not prove prompt leakage.** It demonstrates correlated errors or failure to react to a changed variable. Balanced choice positions do not remove every possible shortcut, but the cited aggregate numbers alone cannot identify one.
+- **Retention training and evaluation are separate.** The multiple-choice development set is not the training anchor set. Its improvement still failed to predict ordinary-generation quality, so it is an inadequate retention certificate; its cause cannot be inferred from the aggregate score alone.
+- **The independent in-range control uses a separately seeded sample.** It is not simply the original 256 development cases reused with new numbers. It does share task families and development wording, and the finite state space can repeat raw values. Rotation and translation controls are paired transformations of the primary cases.
+- **The raw and duration-input training attempts are not a clean one-variable ablation.** The raw 600-step run lacked the subsequent curriculum and paired batches; the raw curriculum run used 1,000 steps while the duration-input run used 600. The sound primary comparison is original versus adapted weights on identical duration-input prompts. A full factorial study remains future work.
+- **Translation sensitivity does not identify a particular internal mechanism.** It shows that changing the remaining absolute-time text can affect the answer even when the calculated durations are invariant. It does not locate a circuit or prove how those fields are interpreted.
+
+The gate itself passed a real-checkpoint comparison: disabling the adapter gave identical checked logits and greedy responses while retaining the same base tensor objects. That is reversibility in this implementation. It is not proof that the active adapter is harmless, that automatic routing is reliable, or that mixed ordinary/temporal conversations are solved. The current caller selects the mode explicitly and starts each request with a fresh attention cache.

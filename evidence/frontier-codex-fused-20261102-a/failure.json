@@ -1,0 +1,853 @@
+{
+  "run_id": "frontier-codex-fused-20261102-a",
+  "provider": "codex",
+  "error": "RuntimeError: One or more live checks failed; inspect retained trace",
+  "elapsed_wall_s": 143.03195920799772,
+  "model_metadata": {
+    "cli_version": "codex-cli 0.165.0",
+    "requested_model": "gpt-6-astra",
+    "resolved_model": "gpt-6-astra",
+    "requested_effort": "xhigh",
+    "model_provider": "openai",
+    "provider": "codex",
+    "transport": "app-server-stdio",
+    "max_tokens_enforced": false,
+    "timesfm_repo": "google/timesfm-3.0-pytorch",
+    "timesfm_revision": "43046b85ec22d584a13f8098c2ed39c889e129c2",
+    "timesfm_checkpoint": "/Users/rachitt/.cache/huggingface/hub/models--google--timesfm-3.0-pytorch/snapshots/43046b85ec22d584a13f8098c2ed39c889e129c2/model.safetensors",
+    "timesfm_load_s": 2.0757592499940074,
+    "timesfm_weight_sha256": "a7592b0a8432baee54483254e5647856911ce69e09d09a9bb65904b2d98f17da"
+  },
+  "results": {
+    "frozen_clock": {
+      "type": "result",
+      "request_id": "frontier-codex-fused-20261102-a:frozen_clock",
+      "monotonic": 52566.313948208,
+      "text": "PENDING",
+      "input_tokens": 17003,
+      "output_tokens": 35,
+      "usage": {
+        "totalTokens": 17038,
+        "inputTokens": 17003,
+        "cachedInputTokens": 14848,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 35,
+        "reasoningOutputTokens": 27
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 6.897183458000654,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": true,
+      "snapshot_elapsed_s": 4.00788970800204,
+      "answer_as_of_mono": 52559.415951333,
+      "answer_as_of_utc": "2026-11-02T17:27:36.813Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 104,
+        "wall_utc": "2026-11-02T17:27:43.714Z",
+        "start_wall_utc": "2026-11-02T17:27:32.805Z",
+        "elapsed_s": 10.909022457999527,
+        "now_mono": 52566.317084083,
+        "observation": {
+          "value": 53.974090190375726,
+          "age_s": 0.09024087499710731,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 7.908740624996426,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 10.908750624999811,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 7.904200457996922,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 7.904200457996922
+      }
+    },
+    "fresh_clock": {
+      "type": "result",
+      "request_id": "frontier-codex-fused-20261102-a:fresh_clock",
+      "monotonic": 52575.695711583,
+      "text": "EXPIRED",
+      "input_tokens": 17054,
+      "output_tokens": 21,
+      "usage": {
+        "totalTokens": 17075,
+        "inputTokens": 17054,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 21,
+        "reasoningOutputTokens": 13
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 9.378033375003724,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": false,
+      "snapshot_elapsed_s": 10.909249124997586,
+      "answer_as_of_mono": 52566.31731075,
+      "answer_as_of_utc": "2026-11-02T17:27:43.714Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 193,
+        "wall_utc": "2026-11-02T17:27:53.099Z",
+        "start_wall_utc": "2026-11-02T17:27:32.805Z",
+        "elapsed_s": 20.29414904100122,
+        "now_mono": 52575.702210666,
+        "observation": {
+          "value": 52.23308385532056,
+          "age_s": 0.06672895800147671,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 17.29386720799812,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 20.293877208001504,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 17.289327040998614,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 17.289327040998614
+      }
+    },
+    "elapsed_number": {
+      "type": "result",
+      "request_id": "frontier-codex-fused-20261102-a:elapsed_number",
+      "monotonic": 52579.4737485,
+      "text": "20.294",
+      "input_tokens": 17058,
+      "output_tokens": 7,
+      "usage": {
+        "totalTokens": 17065,
+        "inputTokens": 17058,
+        "cachedInputTokens": 14848,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 7,
+        "reasoningOutputTokens": 0
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 3.7712639999954263,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 20.294241540999792,
+      "answer_as_of_mono": 52575.702303166,
+      "answer_as_of_utc": "2026-11-02T17:27:53.099Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-fused-20261102-a",
+        "revision": 3,
+        "data_revision": 229,
+        "wall_utc": "2026-11-02T17:27:56.879Z",
+        "start_wall_utc": "2026-11-02T17:27:32.805Z",
+        "elapsed_s": 24.074340332997963,
+        "now_mono": 52579.482401958,
+        "observation": {
+          "value": 55.20139774258974,
+          "age_s": 0.03350983299606014,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 21.074058499994862,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 24.074068499998248,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 21.069518332995358,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 21.069518332995358
+      }
+    },
+    "race": {
+      "type": "result",
+      "request_id": "frontier-codex-fused-20261102-a:race",
+      "monotonic": 52609.819946291,
+      "text": "1. The current recorded mode is NORMAL.\n2. The recent mode event also reported NORMAL and was observed 24.074 seconds ago.\n3. The supplied UTC wall-clock reading is 2026-11-02T17:27:56.879Z, with 24.075 seconds elapsed since run start.\n4. The latest measurement value is 55.20139774258974.\n5. That measurement was observed 0.034 seconds ago and is marked FRESH against the 1.000-second freshness limit.\n6. The probe deadline is EXPIRED, and its scheduled time passed 21.074 seconds ago.\n7. The deadline event was delivered, with the recent deadline_due event for deadline_id \u201cprobe\u201d observed 21.070 seconds ago.\n8. NORMAL is therefore the reported mode, but it does not negate the expired deadline or establish overall system health.\n9. The monitoring plan is to watch subsequent mode events and compare their reported values with the current mode fact.\n10. Track each new measurement together with its observation time rather than treating the present value as indefinitely current.\n11. Reassess measurement freshness against the supplied 1.000-second limit as observation age increases.\n12. Track the probe\u2019s deadline status and delivered event separately from mode and measurement freshness, without assuming the expired deadline has been resolved.",
+      "input_tokens": 17059,
+      "output_tokens": 785,
+      "usage": {
+        "totalTokens": 17844,
+        "inputTokens": 17059,
+        "cachedInputTokens": 14848,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 785,
+        "reasoningOutputTokens": 508
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 30.33695666600397,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": false,
+      "snapshot_elapsed_s": 24.0745614999978,
+      "answer_as_of_mono": 52579.482623125,
+      "answer_as_of_utc": "2026-11-02T17:27:56.879Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-fused-20261102-a",
+        "revision": 6,
+        "data_revision": 518,
+        "wall_utc": "2026-11-02T17:28:27.220Z",
+        "start_wall_utc": "2026-11-02T17:27:32.805Z",
+        "elapsed_s": 54.41319949999888,
+        "now_mono": 52609.821261125,
+        "observation": {
+          "value": 74.17162574397616,
+          "age_s": 0.02242604200000642,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 51.41291766699578,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 4.78245729199989,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 54.41292766699917,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 51.40837749999628,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 5.032479834000696,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 4.775764958998479,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 4.775764958998479
+      }
+    },
+    "refresh": {
+      "type": "result",
+      "request_id": "frontier-codex-fused-20261102-a:refresh",
+      "monotonic": 52614.977264083,
+      "text": "ALARM; EXPIRED",
+      "input_tokens": 17131,
+      "output_tokens": 31,
+      "usage": {
+        "totalTokens": 17162,
+        "inputTokens": 17131,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 31,
+        "reasoningOutputTokens": 20
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 5.155548999995517,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 54.413348250003764,
+      "answer_as_of_mono": 52609.821409875,
+      "answer_as_of_utc": "2026-11-02T17:28:27.220Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-fused-20261102-a",
+        "revision": 6,
+        "data_revision": 566,
+        "wall_utc": "2026-11-02T17:28:32.386Z",
+        "start_wall_utc": "2026-11-02T17:27:32.805Z",
+        "elapsed_s": 59.57882075000089,
+        "now_mono": 52614.986882375,
+        "observation": {
+          "value": 75.0913695694184,
+          "age_s": 0.06544095899880631,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 56.578538916997786,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 9.948078542001895,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 59.57854891700117,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 56.57399874999828,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 10.198101084002701,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 9.941386209000484,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 9.941386209000484
+      }
+    },
+    "freshness": {
+      "type": "result",
+      "request_id": "frontier-codex-fused-20261102-a:freshness",
+      "monotonic": 52687.34967325,
+      "text": "STALE",
+      "input_tokens": 17127,
+      "output_tokens": 28,
+      "usage": {
+        "totalTokens": 17155,
+        "inputTokens": 17127,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 28,
+        "reasoningOutputTokens": 20
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 70.75737291700352,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": false,
+      "snapshot_elapsed_s": 61.1834918329987,
+      "answer_as_of_mono": 52616.591553458,
+      "answer_as_of_utc": "2026-11-02T17:28:33.991Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-fused-20261102-a",
+        "revision": 7,
+        "data_revision": 1223,
+        "wall_utc": "2026-11-02T17:29:44.754Z",
+        "start_wall_utc": "2026-11-02T17:27:32.805Z",
+        "elapsed_s": 131.9456138750029,
+        "now_mono": 52687.3536755,
+        "observation": {
+          "value": 93.96078083343073,
+          "age_s": 0.09873162500298349,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 128.9453320419998,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 82.3148716670039,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 128.9407918750003,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 82.5648942090047,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 82.30817933400249,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 72.36653058400407,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 72.36653058400407
+      }
+    },
+    "forecast": {
+      "type": "result",
+      "request_id": "frontier-codex-fused-20261102-a:forecast",
+      "monotonic": 52687.445609291,
+      "point": [
+        93.98912811279297,
+        94.0085678100586,
+        94.03254699707031,
+        94.05108642578125,
+        94.07429504394531,
+        94.09268188476562,
+        94.11206817626953,
+        94.12074279785156,
+        94.13294219970703,
+        94.14423370361328,
+        94.14955139160156,
+        94.15580749511719,
+        94.16484832763672,
+        94.16780090332031,
+        94.17063903808594,
+        94.1644287109375,
+        94.15834045410156,
+        94.16336059570312,
+        94.15608215332031,
+        94.14994049072266,
+        94.13174438476562,
+        94.1263427734375,
+        94.11060333251953,
+        94.09236907958984,
+        94.08047485351562,
+        94.06739807128906,
+        94.04503631591797,
+        94.02345275878906,
+        93.99799346923828,
+        93.97052001953125,
+        93.94630432128906,
+        93.92138671875,
+        93.8975601196289,
+        93.86295318603516,
+        93.83694458007812,
+        93.81055450439453,
+        93.77763366699219,
+        93.75231170654297,
+        93.71833038330078,
+        93.68728637695312,
+        93.65242767333984,
+        93.6187744140625,
+        93.58319091796875,
+        93.53556823730469,
+        93.49685668945312,
+        93.46575927734375,
+        93.42023468017578,
+        93.37361907958984,
+        93.32402801513672,
+        93.27269744873047,
+        93.2240219116211,
+        93.1708755493164,
+        93.12199401855469,
+        93.06637573242188,
+        93.00391387939453,
+        92.9529800415039,
+        92.88536834716797,
+        92.81950378417969,
+        92.76533508300781,
+        92.69795227050781,
+        92.63258361816406,
+        92.58599853515625,
+        92.53089141845703,
+        92.48176574707031
+      ],
+      "q10": [
+        93.97069549560547,
+        93.99974060058594,
+        94.01948547363281,
+        94.0473861694336,
+        94.0691909790039,
+        94.07797241210938,
+        94.09068298339844,
+        94.10771179199219,
+        94.11914825439453,
+        94.12675476074219,
+        94.12838745117188,
+        94.13555145263672,
+        94.1388168334961,
+        94.14060974121094,
+        94.14413452148438,
+        94.13629913330078,
+        94.140380859375,
+        94.13246154785156,
+        94.1292953491211,
+        94.11581420898438,
+        94.10643005371094,
+        94.09390258789062,
+        94.0728988647461,
+        94.05793762207031,
+        94.03467559814453,
+        94.0132827758789,
+        93.98092651367188,
+        93.9637680053711,
+        93.94039154052734,
+        93.90735626220703,
+        93.88592529296875,
+        93.8553237915039,
+        93.8236312866211,
+        93.7789306640625,
+        93.7442626953125,
+        93.71221923828125,
+        93.67550659179688,
+        93.64221954345703,
+        93.58956909179688,
+        93.55245971679688,
+        93.5086898803711,
+        93.45542907714844,
+        93.414794921875,
+        93.37405395507812,
+        93.31475830078125,
+        93.28520202636719,
+        93.22344207763672,
+        93.14647674560547,
+        93.09432220458984,
+        93.02127838134766,
+        92.97734832763672,
+        92.90469360351562,
+        92.8327865600586,
+        92.7643051147461,
+        92.70724487304688,
+        92.62329864501953,
+        92.54820251464844,
+        92.50640869140625,
+        92.42610931396484,
+        92.3587417602539,
+        92.26200866699219,
+        92.19867706298828,
+        92.08915710449219,
+        92.03224182128906
+      ],
+      "q90": [
+        93.99826049804688,
+        94.017578125,
+        94.03563690185547,
+        94.05919647216797,
+        94.08264923095703,
+        94.1026611328125,
+        94.11414337158203,
+        94.12711334228516,
+        94.14110565185547,
+        94.1507797241211,
+        94.16050720214844,
+        94.16323852539062,
+        94.17779541015625,
+        94.18595886230469,
+        94.18904876708984,
+        94.18399047851562,
+        94.18814849853516,
+        94.19277954101562,
+        94.18661499023438,
+        94.18138885498047,
+        94.1666030883789,
+        94.15339660644531,
+        94.14653015136719,
+        94.13868713378906,
+        94.12373352050781,
+        94.12580871582031,
+        94.10179901123047,
+        94.09203338623047,
+        94.06478118896484,
+        94.04440307617188,
+        94.02987670898438,
+        94.0188217163086,
+        93.9945297241211,
+        93.97285461425781,
+        93.95087432861328,
+        93.92996215820312,
+        93.90479278564453,
+        93.89095306396484,
+        93.86677551269531,
+        93.85067749023438,
+        93.81572723388672,
+        93.805908203125,
+        93.76619720458984,
+        93.73114776611328,
+        93.70804595947266,
+        93.68004608154297,
+        93.6515121459961,
+        93.62433624267578,
+        93.60839080810547,
+        93.56409454345703,
+        93.5266342163086,
+        93.50057220458984,
+        93.48706817626953,
+        93.43798828125,
+        93.4183120727539,
+        93.36186981201172,
+        93.31426239013672,
+        93.27051544189453,
+        93.23281860351562,
+        93.20944213867188,
+        93.1807632446289,
+        93.16789245605469,
+        93.15933227539062,
+        93.12134552001953
+      ],
+      "elapsed_s": 0.09072041600302327,
+      "model_id": "google/timesfm-3.0-pytorch",
+      "revision": "43046b85ec22d584a13f8098c2ed39c889e129c2",
+      "valid": true,
+      "validity_reason": "valid",
+      "context_end_mono": 52687.254949791,
+      "context_last_value": 93.96078083343073,
+      "forecast_origin_data_revision": 1223
+    },
+    "predictive_wake": {
+      "type": "result",
+      "request_id": "frontier-codex-fused-20261102-a:predictive_wake",
+      "monotonic": 52698.43191375,
+      "text": "- **Elapsed time:** 134.855 seconds.\n- **Latest observation:** Fresh\u20140.077 seconds old, within the 1-second limit.\n- **Current mode:** ALARM.",
+      "input_tokens": 17140,
+      "output_tokens": 124,
+      "usage": {
+        "totalTokens": 17264,
+        "inputTokens": 17140,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 124,
+        "reasoningOutputTokens": 79
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 8.168160249995708,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": false,
+      "snapshot_elapsed_s": 134.85485250000056,
+      "answer_as_of_mono": 52690.262914125,
+      "answer_as_of_utc": "2026-11-02T17:29:47.663Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-fused-20261102-a",
+        "revision": 7,
+        "data_revision": 1328,
+        "wall_utc": "2026-11-02T17:29:55.833Z",
+        "start_wall_utc": "2026-11-02T17:27:32.805Z",
+        "elapsed_s": 143.02475229099946,
+        "now_mono": 52698.432813916,
+        "observation": {
+          "value": 90.96153382486291,
+          "age_s": 0.0005802500018035062,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 140.02447045799636,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 93.39401008300047,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 140.01993029099685,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 93.64403262500127,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 93.38731774999906,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 83.44566900000063,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 83.44566900000063
+      }
+    }
+  },
+  "race": {
+    "first_token_mono": 52604.778258416,
+    "alarm_mono": 52604.788796166,
+    "urgent_due_mono": 52605.038803833
+  },
+  "deadlines": [
+    {
+      "run_id": "frontier-codex-fused-20261102-a",
+      "deadline_id": "probe",
+      "scheduled_mono": 52558.408343458,
+      "fired_at_mono": 52558.412883625,
+      "lateness_s": 0.004540166999504436,
+      "wall_utc": "2026-11-02T17:27:35.810Z",
+      "revision": 3
+    },
+    {
+      "run_id": "frontier-codex-fused-20261102-a",
+      "deadline_id": "urgent",
+      "scheduled_mono": 52605.038803833,
+      "fired_at_mono": 52605.045496166,
+      "lateness_s": 0.006692333001410589,
+      "wall_utc": "2026-11-02T17:28:22.444Z",
+      "revision": 6
+    }
+  ],
+  "samples_ingested": 1328
+}

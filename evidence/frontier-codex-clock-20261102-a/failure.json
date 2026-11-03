@@ -1,0 +1,542 @@
+{
+  "run_id": "frontier-codex-clock-20261102-a",
+  "provider": "codex",
+  "error": "RuntimeError: One or more live checks failed; inspect retained trace",
+  "elapsed_wall_s": 71.68064616600168,
+  "model_metadata": {
+    "cli_version": "codex-cli 0.165.0",
+    "requested_model": "gpt-6-astra",
+    "resolved_model": "gpt-6-astra",
+    "effort": "xhigh",
+    "model_provider": "openai",
+    "provider": "codex",
+    "transport": "app-server-stdio",
+    "max_tokens_enforced": false
+  },
+  "results": {
+    "frozen_clock": {
+      "type": "result",
+      "request_id": "frontier-codex-clock-20261102-a:frozen_clock",
+      "monotonic": 52351.049665833,
+      "text": "PENDING",
+      "input_tokens": 17003,
+      "output_tokens": 25,
+      "usage": {
+        "totalTokens": 17028,
+        "inputTokens": 17003,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 25,
+        "reasoningOutputTokens": 17
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 6.3658862079973915,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": true,
+      "snapshot_elapsed_s": 4.003341666000779,
+      "answer_as_of_mono": 52344.683055041,
+      "answer_as_of_utc": "2026-11-02T17:24:02.079Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-clock-20261102-a",
+        "revision": 3,
+        "data_revision": 98,
+        "wall_utc": "2026-11-02T17:24:08.455Z",
+        "start_wall_utc": "2026-11-02T17:23:58.075Z",
+        "elapsed_s": 10.379543791001197,
+        "now_mono": 52351.059257166,
+        "observation": {
+          "value": 54.18039123566036,
+          "age_s": 0.0667838750014198,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 7.3791908330022125,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 10.379203707998386,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 7.375164165998285,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 7.375164165998285
+      }
+    },
+    "fresh_clock": {
+      "type": "result",
+      "request_id": "frontier-codex-clock-20261102-a:fresh_clock",
+      "monotonic": 52357.038810541,
+      "text": "EXPIRED",
+      "input_tokens": 17054,
+      "output_tokens": 23,
+      "usage": {
+        "totalTokens": 17077,
+        "inputTokens": 17054,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 23,
+        "reasoningOutputTokens": 15
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 5.979221833003976,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 10.379650499999116,
+      "answer_as_of_mono": 52351.059363875,
+      "answer_as_of_utc": "2026-11-02T17:24:08.455Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-clock-20261102-a",
+        "revision": 3,
+        "data_revision": 154,
+        "wall_utc": "2026-11-02T17:24:14.446Z",
+        "start_wall_utc": "2026-11-02T17:23:58.075Z",
+        "elapsed_s": 16.370185833002324,
+        "now_mono": 52357.049899208,
+        "observation": {
+          "value": 51.66123030669526,
+          "age_s": 0.055773750005755574,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 13.36983287500334,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 16.369845749999513,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 13.365806207999412,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 13.365806207999412
+      }
+    },
+    "elapsed_number": {
+      "type": "result",
+      "request_id": "frontier-codex-clock-20261102-a:elapsed_number",
+      "monotonic": 52363.330359541,
+      "text": "16.370",
+      "input_tokens": 17058,
+      "output_tokens": 27,
+      "usage": {
+        "totalTokens": 17085,
+        "inputTokens": 17058,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 27,
+        "reasoningOutputTokens": 18
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 6.280236000005971,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": false,
+      "snapshot_elapsed_s": 16.37025820800045,
+      "answer_as_of_mono": 52357.049971583,
+      "answer_as_of_utc": "2026-11-02T17:24:14.446Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-clock-20261102-a",
+        "revision": 3,
+        "data_revision": 213,
+        "wall_utc": "2026-11-02T17:24:20.730Z",
+        "start_wall_utc": "2026-11-02T17:23:58.075Z",
+        "elapsed_s": 22.65415299999586,
+        "now_mono": 52363.333866375,
+        "observation": {
+          "value": 53.90265621233923,
+          "age_s": 0.021677208998880815,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 19.653800041996874,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 22.653812916993047,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 19.649773374992947,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 19.649773374992947
+      }
+    },
+    "race": {
+      "type": "result",
+      "request_id": "frontier-codex-clock-20261102-a:race",
+      "monotonic": 52399.648782291,
+      "text": "1. The current reported mode is NORMAL, as recorded in the supplied current facts.\n2. The most recent mode event was observed 22.654 seconds ago and carried the value NORMAL.\n3. The supplied UTC wall-clock reading is 2026-11-02T17:24:20.730Z, with 22.654 seconds elapsed since run start.\n4. The latest measurement value is 53.90265621233923.\n5. That measurement was observed 0.022 seconds ago and is FRESH under the supplied 1.000-second freshness limit.\n6. The probe deadline is EXPIRED, and its scheduled time passed 19.654 seconds ago.\n7. The deadline event was delivered, with the corresponding deadline_due event observed 19.650 seconds ago for deadline_id probe.\n8. Monitor subsequent mode events for any change from the currently reported NORMAL state.\n9. Track each subsequent measurement together with its observation time so its value and age remain distinguishable.\n10. Reassess measurement freshness as time advances, treating an age exceeding 1.000 seconds as outside the supplied freshness limit.\n11. Track deadline status and event delivery separately from mode, since the supplied situation contains both NORMAL mode and an expired deadline.\n12. Do not interpret NORMAL or FRESH as proof that the measurement is acceptable, because no acceptable measurement range is supplied.",
+      "input_tokens": 17059,
+      "output_tokens": 698,
+      "usage": {
+        "totalTokens": 17757,
+        "inputTokens": 17059,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 698,
+        "reasoningOutputTokens": 414
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 36.3144472089989,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "expired",
+      "control_only": false,
+      "snapshot_elapsed_s": 22.654306750002434,
+      "answer_as_of_mono": 52363.334020125,
+      "answer_as_of_utc": "2026-11-02T17:24:20.730Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-clock-20261102-a",
+        "revision": 6,
+        "data_revision": 558,
+        "wall_utc": "2026-11-02T17:24:57.047Z",
+        "start_wall_utc": "2026-11-02T17:23:58.075Z",
+        "elapsed_s": 58.97109866599931,
+        "now_mono": 52399.650812041,
+        "observation": {
+          "value": 75.21129760164304,
+          "age_s": 0.011656166003376711,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 55.97074570800032,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 6.5966854579965,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 58.970758582996496,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 55.966719040996395,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 6.84670079100033,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 6.595013208003365,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 6.595013208003365
+      }
+    },
+    "refresh": {
+      "type": "result",
+      "request_id": "frontier-codex-clock-20261102-a:refresh",
+      "monotonic": 52405.393023875,
+      "text": "ALARM; EXPIRED",
+      "input_tokens": 17131,
+      "output_tokens": 27,
+      "usage": {
+        "totalTokens": 17158,
+        "inputTokens": 17131,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 27,
+        "reasoningOutputTokens": 16
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 5.741451582995069,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": true,
+      "validity_reason": "valid",
+      "control_only": false,
+      "snapshot_elapsed_s": 58.97138049999921,
+      "answer_as_of_mono": 52399.651093875,
+      "answer_as_of_utc": "2026-11-02T17:24:57.047Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-clock-20261102-a",
+        "revision": 6,
+        "data_revision": 612,
+        "wall_utc": "2026-11-02T17:25:02.796Z",
+        "start_wall_utc": "2026-11-02T17:23:58.075Z",
+        "elapsed_s": 64.71989387500071,
+        "now_mono": 52405.39960725,
+        "observation": {
+          "value": 72.81611151171926,
+          "age_s": 0.00039929200283950195,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 61.71954091700172,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 12.3454806669979,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "mode",
+            "age_s": 64.7195537919979,
+            "revision": 1,
+            "payload": {
+              "value": "NORMAL"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 61.715514249997796,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 12.59549600000173,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 12.343808417004766,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          }
+        ],
+        "last_reason": "deadline_due",
+        "time_since_last_reason_s": 12.343808417004766
+      }
+    },
+    "freshness": {
+      "type": "result",
+      "request_id": "frontier-codex-clock-20261102-a:freshness",
+      "monotonic": 52412.340803583,
+      "text": "STALE",
+      "input_tokens": 17127,
+      "output_tokens": 20,
+      "usage": {
+        "totalTokens": 17147,
+        "inputTokens": 17127,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 20,
+        "reasoningOutputTokens": 12
+      },
+      "finish_reason": "completed",
+      "elapsed_s": 5.330928625000524,
+      "model": "gpt-6-astra",
+      "provider": "codex",
+      "valid": false,
+      "validity_reason": "observation_changed",
+      "control_only": false,
+      "snapshot_elapsed_s": 66.32954745800089,
+      "answer_as_of_mono": 52407.009260833,
+      "answer_as_of_utc": "2026-11-02T17:25:04.405Z",
+      "live_publication_clock": {
+        "run_id": "frontier-codex-clock-20261102-a",
+        "revision": 7,
+        "data_revision": 650,
+        "wall_utc": "2026-11-02T17:25:09.739Z",
+        "start_wall_utc": "2026-11-02T17:23:58.075Z",
+        "elapsed_s": 71.66309145800187,
+        "now_mono": 52412.342804833,
+        "observation": {
+          "value": 73.48022351815774,
+          "age_s": 0.03448625000601169,
+          "freshness": "FRESH",
+          "freshness_limit_s": 1.0
+        },
+        "deadlines": [
+          {
+            "id": "probe",
+            "remaining_s": 0.0,
+            "overdue_s": 68.66273850000289,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          },
+          {
+            "id": "urgent",
+            "remaining_s": 0.0,
+            "overdue_s": 19.288678249999066,
+            "status": "fired",
+            "expiry_status": "EXPIRED",
+            "event_status": "delivered"
+          }
+        ],
+        "events": [
+          {
+            "name": "deadline_due",
+            "age_s": 68.65871183299896,
+            "revision": 3,
+            "payload": {
+              "deadline_id": "probe"
+            }
+          },
+          {
+            "name": "mode_changed",
+            "age_s": 19.538693583002896,
+            "revision": 4,
+            "payload": {
+              "mode": "ALARM"
+            }
+          },
+          {
+            "name": "deadline_due",
+            "age_s": 19.28700600000593,
+            "revision": 6,
+            "payload": {
+              "deadline_id": "urgent"
+            }
+          },
+          {
+            "name": "source_paused",
+            "age_s": 6.942958792002173,
+            "revision": 7,
+            "payload": {
+              "duration_s": 3
+            }
+          }
+        ],
+        "last_reason": "source_paused",
+        "time_since_last_reason_s": 6.942958792002173
+      }
+    }
+  },
+  "race": {
+    "first_token_mono": 52392.80208,
+    "alarm_mono": 52392.804120833,
+    "urgent_due_mono": 52393.054126583
+  },
+  "deadlines": [
+    {
+      "run_id": "frontier-codex-clock-20261102-a",
+      "deadline_id": "probe",
+      "scheduled_mono": 52343.680066333,
+      "fired_at_mono": 52343.684093,
+      "lateness_s": 0.004026667003927287,
+      "wall_utc": "2026-11-02T17:24:01.080Z",
+      "revision": 3
+    },
+    {
+      "run_id": "frontier-codex-clock-20261102-a",
+      "deadline_id": "urgent",
+      "scheduled_mono": 52393.054126583,
+      "fired_at_mono": 52393.055798833,
+      "lateness_s": 0.0016722499931347556,
+      "wall_utc": "2026-11-02T17:24:50.452Z",
+      "revision": 6
+    }
+  ],
+  "samples_ingested": 650
+}

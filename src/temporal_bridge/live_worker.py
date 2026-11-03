@@ -9,17 +9,31 @@ from __future__ import annotations
 import math
 import multiprocessing
 import queue
+import signal
 import time
 
 
 class _Runtime:
     """All MLX imports and model instances stay in the spawned child."""
 
-    def __init__(self, model_path, use_tsfm):
+    def __init__(self, model_path, use_tsfm, *, provider="mlx", effort="xhigh",
+                 claude_profile="startup", request_timeout_s=90):
         self.model_path = model_path
         self.use_tsfm = use_tsfm
         self.language = None
         self.forecaster = None
+        self.cli_backend = None
+        if provider == "codex":
+            from temporal_bridge.codex_backend import CodexBackend
+
+            self.cli_backend = CodexBackend(model=model_path, effort=effort,
+                                            timeout_s=request_timeout_s)
+        elif provider == "claude":
+            from temporal_bridge.claude_backend import ClaudeCodeBackend
+
+            self.cli_backend = ClaudeCodeBackend(model=model_path, effort=effort,
+                                                 profile=claude_profile,
+                                                 timeout_s=request_timeout_s)
 
     def _language(self):
         if self.language is None:
@@ -38,9 +52,13 @@ class _Runtime:
         return self.forecaster
 
     def warmup(self):
-        language = self._language()
-        language._load()
-        info = {"model_path": self.model_path, "language_load_s": language.load_s}
+        if self.cli_backend is not None:
+            info = self.cli_backend.warmup()
+        else:
+            language = self._language()
+            language._load()
+            info = {"provider": "mlx", "model_path": self.model_path,
+                    "language_load_s": language.load_s}
         if self.use_tsfm:
             forecaster = self._forecaster()
             forecaster._load()
@@ -48,6 +66,10 @@ class _Runtime:
                          "timesfm_checkpoint": forecaster.checkpoint_path,
                          "timesfm_load_s": forecaster.load_s})
         return info
+
+    def close(self):
+        if self.cli_backend is not None:
+            self.cli_backend.close()
 
     def prepare_generation(self, prompt, max_tokens):
         from mlx_lm import stream_generate
@@ -90,6 +112,9 @@ def _handle_request(request, runtime, emit):
             result = runtime.forecast(request["context"], request["horizon"])
             send("result", **result)
         elif kind == "generate":
+            if getattr(runtime, "cli_backend", None) is not None:
+                runtime.cli_backend.generate(request["prompt"], request["max_tokens"], send)
+                return
             iterator, input_tokens = runtime.prepare_generation(request["prompt"], request["max_tokens"])
             started = time.monotonic()
             emit({"type": "started", "request_id": request_id, "monotonic": started})
@@ -112,21 +137,37 @@ def _handle_request(request, runtime, emit):
         send("error", error=f"{type(error).__name__}: {error}")
 
 
-def _worker_main(requests, responses, model_path, use_tsfm):
-    runtime = _Runtime(model_path, use_tsfm)
-    while True:
-        request = requests.get()
-        if request is None:
-            return
-        _handle_request(request, runtime, responses.put)
+def _stop_worker(signum, frame):
+    # Let the worker close its owned CLI subprocesses before the parent escalates.
+    raise SystemExit(0)
+
+
+def _worker_main(requests, responses, model_path, use_tsfm, options):
+    signal.signal(signal.SIGTERM, _stop_worker)
+    runtime = _Runtime(model_path, use_tsfm, **options)
+    try:
+        while True:
+            request = requests.get()
+            if request is None:
+                return
+            _handle_request(request, runtime, responses.put)
+    finally:
+        runtime.close()
 
 
 class ProcessModelWorker:
     """Serial model work in a spawned process; parent methods never load MLX."""
 
-    def __init__(self, model_path: str, use_tsfm: bool = True):
+    def __init__(self, model_path: str, use_tsfm: bool = True, *, provider="mlx",
+                 effort="xhigh", claude_profile="startup", request_timeout_s=90):
+        if provider not in {"mlx", "claude", "codex"}:
+            raise ValueError("unknown language provider")
+        if not math.isfinite(request_timeout_s) or request_timeout_s <= 0:
+            raise ValueError("request timeout must be finite and positive")
         self.model_path = str(model_path)
         self.use_tsfm = bool(use_tsfm)
+        self.options = {"provider": provider, "effort": effort,
+                        "claude_profile": claude_profile, "request_timeout_s": request_timeout_s}
         self._process = None
         self._requests = None
         self._responses = None
@@ -141,7 +182,7 @@ class ProcessModelWorker:
         self._responses = context.Queue()
         self._process = context.Process(target=_worker_main,
                                         args=(self._requests, self._responses,
-                                              self.model_path, self.use_tsfm), daemon=True)
+                                              self.model_path, self.use_tsfm, self.options), daemon=True)
         self._process.start()
 
     def submit(self, request_id, prompt="", max_tokens=128, kind="generate", context=None,
@@ -204,7 +245,7 @@ class ProcessModelWorker:
             self._process.join(timeout=max(0.0, timeout))
         if self._process.is_alive():
             self._process.terminate()
-            self._process.join(timeout=1.0)
+            self._process.join(timeout=2.0)
         if self._process.is_alive():
             self._process.kill()
             self._process.join(timeout=1.0)

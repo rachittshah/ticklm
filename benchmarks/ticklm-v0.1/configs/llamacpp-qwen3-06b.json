@@ -1,0 +1,15 @@
+{
+  "system_id": "qwen3-06b-q4km-llamacpp",
+  "track": "local-http",
+  "type": "http",
+  "provider": "llama.cpp",
+  "model": "qwen3-0.6b-q4",
+  "endpoint": "http://127.0.0.1:18084/v1",
+  "revision": "sha256:7f4030143c1c477224c5434f8272c662a8b042079a0a584f0a27a1684fe2e1fa",
+  "quantization": "GGUF Q4_K_M",
+  "thinking": false,
+  "hard_token_cap": true,
+  "max_tokens": 256,
+  "timeout_s": 120,
+  "paid": false
+}

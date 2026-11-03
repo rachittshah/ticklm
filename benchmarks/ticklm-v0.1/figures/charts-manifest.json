@@ -1,0 +1,244 @@
+{
+  "chart_source_sha256": "ccc13be9d6ceabac5b2cbc9a8612c74e720a895d8160d0e2be8a63bcc678fa6e",
+  "figures": {
+    "live-policy-outcomes": {
+      "formats": [
+        "svg",
+        "png"
+      ],
+      "live_rows": 8,
+      "oracle_policy": "reference only; excluded from main comparison",
+      "policies": [
+        "freshness_only",
+        "unguarded"
+      ]
+    },
+    "static-112-tier": {
+      "coverage_by_run": {
+        "claude-fable-51-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 56,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 56,
+            "strict_total": 56
+          }
+        },
+        "codex-gpt6-astra-screen": {
+          "derived": {
+            "complete": false,
+            "completed": 54,
+            "expected": 56,
+            "strict_correct": 54,
+            "strict_total": 54
+          },
+          "raw": {
+            "complete": false,
+            "completed": 49,
+            "expected": 56,
+            "strict_correct": 49,
+            "strict_total": 49
+          }
+        },
+        "gemma3-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          }
+        },
+        "lfm25-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 20,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 20,
+            "strict_total": 56
+          }
+        },
+        "llama32-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 26,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 24,
+            "strict_total": 56
+          }
+        },
+        "llamacpp-qwen3-06b-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          }
+        },
+        "ollama-qwen3-06b-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          }
+        },
+        "phi4-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          }
+        },
+        "qwen3-06b-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          }
+        },
+        "qwen3-4b-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          }
+        },
+        "qwen35-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 33,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 32,
+            "strict_total": 56
+          }
+        },
+        "smollm3-screen": {
+          "derived": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          },
+          "raw": {
+            "complete": true,
+            "completed": 56,
+            "expected": 56,
+            "strict_correct": 0,
+            "strict_total": 56
+          }
+        }
+      },
+      "formats": [
+        "svg",
+        "png"
+      ],
+      "included_runs": [
+        "claude-fable-51-screen",
+        "codex-gpt6-astra-screen",
+        "gemma3-screen",
+        "lfm25-screen",
+        "llama32-screen",
+        "llamacpp-qwen3-06b-screen",
+        "ollama-qwen3-06b-screen",
+        "phi4-screen",
+        "qwen3-06b-screen",
+        "qwen3-4b-screen",
+        "qwen35-screen",
+        "smollm3-screen"
+      ],
+      "incomplete_views_score_points_plotted": false,
+      "score": "micro accuracy; strict and exact-option diagnostic"
+    }
+  },
+  "files": [
+    "live-policy-outcomes.svg",
+    "live-policy-outcomes.png",
+    "static-112-tier.svg",
+    "static-112-tier.png"
+  ],
+  "input_report": "/Users/rachitt/labs/temporal-bridge/benchmarks/ticklm-v0.1/results.json",
+  "input_report_sha256": "545c451a3099fe2fb5f4d528ab5336b7203a781f6abb24f71e0f35c9a903497c",
+  "matplotlib_dependency": "matplotlib==3.11.2 (project report extra)",
+  "matplotlib_version": "3.11.2",
+  "reproduction_command": "uv run python -m ticklm_bench.charts --input benchmarks/ticklm-v0.1/results.json --output /Users/rachitt/labs/temporal-bridge/benchmarks/ticklm-v0.1/figures"
+}

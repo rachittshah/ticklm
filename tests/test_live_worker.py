@@ -104,3 +104,45 @@ def test_submitted_forecast_copies_context_and_checks_finiteness():
     assert captured[0]["context"] == [1.0, 2.0]
     with pytest.raises(RuntimeError, match="outstanding"):
         worker.submit("another", kind="health")
+
+
+def test_cli_generation_preserves_stream_evidence_and_request_identity():
+    class Backend:
+        def generate(self, prompt, max_tokens, emit):
+            assert (prompt, max_tokens) == ("clock question", 12)
+            emit("started")
+            emit("first_token", evidence="visible_text_delta", model="frontier-model")
+            emit("result", text="4.528", input_tokens=40, output_tokens=3,
+                 model="frontier-model", elapsed_s=.5, finish_reason="completed")
+
+    events = []
+    runtime = SimpleNamespace(cli_backend=Backend())
+    _handle_request({"kind": "generate", "request_id": "trial:elapsed_number",
+                     "prompt": "clock question", "max_tokens": 12}, runtime, events.append)
+    assert [event["type"] for event in events] == ["started", "first_token", "result"]
+    assert all(event["request_id"] == "trial:elapsed_number" for event in events)
+    assert events[1]["evidence"] == "visible_text_delta"
+    assert events[-1]["text"] == "4.528"
+    assert events[-1]["model"] == "frontier-model"
+
+
+def test_cli_failure_cannot_be_misreported_as_a_model_answer():
+    class Backend:
+        def generate(self, prompt, max_tokens, emit):
+            emit("started")
+            raise TimeoutError("visible response exceeded request deadline")
+
+    events = []
+    _handle_request({"kind": "generate", "request_id": "trial:timeout", "prompt": "q",
+                     "max_tokens": 12}, SimpleNamespace(cli_backend=Backend()), events.append)
+    assert [event["type"] for event in events] == ["started", "error"]
+    assert events[-1]["request_id"] == "trial:timeout"
+    assert "TimeoutError" in events[-1]["error"]
+
+
+def test_provider_configuration_rejects_unknown_or_unbounded_requests():
+    with pytest.raises(ValueError, match="provider"):
+        ProcessModelWorker("model", provider="unknown")
+    for timeout in (0, -1, float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="timeout"):
+            ProcessModelWorker("model", provider="codex", request_timeout_s=timeout)

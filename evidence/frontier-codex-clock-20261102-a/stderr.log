@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/Users/rachitt/labs/temporal-bridge/realtime.py", line 587, in <module>
+    main()
+  File "/Users/rachitt/labs/temporal-bridge/realtime.py", line 583, in main
+    asyncio.run(self_test(args) if args.mode == "self-test" else watch(args))
+  File "/Users/rachitt/.local/share/uv/python/cpython-3.12.10-macos-aarch64-none/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/rachitt/.local/share/uv/python/cpython-3.12.10-macos-aarch64-none/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/rachitt/.local/share/uv/python/cpython-3.12.10-macos-aarch64-none/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/rachitt/labs/temporal-bridge/realtime.py", line 402, in self_test
+    raise RuntimeError("One or more live checks failed; inspect retained trace")
+RuntimeError: One or more live checks failed; inspect retained trace

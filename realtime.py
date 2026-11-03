@@ -62,11 +62,16 @@ def regular_history(samples, count=128, sample_s=.1, max_gap_s=.3):
 
 
 class LiveRuntime:
-    def __init__(self, run_dir, model_path, use_tsfm=True):
+    def __init__(self, run_dir, model_path, use_tsfm=True, *, provider="mlx", effort="xhigh",
+                 claude_profile="startup", request_timeout_s=90):
         self.out = Path(run_dir)
         self.out.mkdir(parents=True, exist_ok=True)
         self.trace = (self.out / "trace.jsonl").open("x")
-        self.worker = ProcessModelWorker(model_path, use_tsfm=use_tsfm)
+        self.worker = ProcessModelWorker(model_path, use_tsfm=use_tsfm, provider=provider,
+                                         effort=effort, claude_profile=claude_profile,
+                                         request_timeout_s=request_timeout_s)
+        self.provider = provider
+        self.metadata = {}
         self.state = None
         self.active = None
         self.tickets = {}
@@ -100,6 +105,7 @@ class LiveRuntime:
                     metadata = dict(message.get("metadata", {}))
                     if metadata.get("timesfm_checkpoint"):
                         metadata["timesfm_weight_sha256"] = file_sha256(metadata["timesfm_checkpoint"])
+                    self.metadata = metadata
                     self.state = TemporalState(self.out.name)
                     self.log("run_started", snapshot=self.state.snapshot(),
                              warmup_wall_s=time.monotonic() - started,
@@ -147,7 +153,7 @@ class LiveRuntime:
             self.messages.append(message)
             self.log("worker", **message)
             request_id = message["request_id"]
-            if (inject_race and request_id.endswith(":race")
+            if (inject_race and isinstance(request_id, str) and request_id.endswith(":race")
                     and message["type"] == "first_token" and not self.race):
                 self.facts["mode"] = "ALARM"
                 self.state.event("mode_changed", {"mode": "ALARM"})
@@ -200,8 +206,56 @@ def numeric_reply(result):
     return float(text) if re.fullmatch(r"\d+(?:\.\d+)?", text) else None
 
 
+def runtime_from_args(args):
+    return LiveRuntime(args.run_dir, args.model, use_tsfm=not args.clock_only,
+                       provider=args.provider, effort=args.effort,
+                       claude_profile=args.claude_profile,
+                       request_timeout_s=args.request_timeout_s)
+
+
+def response_measurements(runtime):
+    """Report client-observed latency separately from answer correctness and validity."""
+    first_outputs = {message["request_id"]: message for message in runtime.messages
+                     if message["type"] == "first_token"}
+    measurements = {}
+    for request_id, (ticket, name, control) in runtime.tickets.items():
+        result = runtime.results.get(name, {})
+        first = first_outputs.get(request_id, {})
+        first_at = first.get("monotonic")
+        completed = result.get("monotonic")
+        measurements[name] = {
+            "request_id": request_id, "model": result.get("model", runtime.worker.model_path),
+            "control_only": control, "valid": result.get("valid"),
+            "validity_reason": result.get("validity_reason"),
+            "first_stream_output_s": None if first_at is None else first_at - ticket["issued_mono"],
+            "first_output_evidence": first.get("evidence", "model_token" if first else None),
+            "first_visible_text_s": (first_at - ticket["issued_mono"]
+                                     if first.get("evidence") == "visible_text_delta" else None),
+            "completion_s": None if completed is None else completed - ticket["issued_mono"],
+            "input_tokens": result.get("input_tokens"), "output_tokens": result.get("output_tokens"),
+        }
+    return measurements
+
+
+def evaluate_trial(checks, results):
+    """A correct answer is insufficient when it cannot be published before expiry."""
+    elapsed = numeric_reply(results["elapsed_number"])
+    correctness = {
+        "fresh_deadline": exact_reply(results["fresh_clock"], "EXPIRED"),
+        "elapsed_seconds": elapsed is not None and
+        abs(elapsed - results["elapsed_number"]["snapshot_elapsed_s"]) <= .15,
+        "alarm_refresh": exact_reply(results["refresh"], "ALARM; EXPIRED"),
+        "stale_snapshot": exact_reply(results["freshness"], "STALE"),
+    }
+    publication = {name: results[name].get("valid") is True
+                   for name in ("fresh_clock", "elapsed_number", "refresh", "freshness")}
+    return {"checks": checks, "scripted_checks_passed": all(checks.values()),
+            "answer_correctness": correctness, "publication_checks": publication,
+            "all_checks_passed": all(checks.values()) and all(publication.values())}
+
+
 async def self_test(args):
-    runtime = LiveRuntime(args.run_dir, args.model, use_tsfm=not args.clock_only)
+    runtime = runtime_from_args(args)
     try:
         await runtime.start()
         state = runtime.state
@@ -304,8 +358,8 @@ async def self_test(args):
                                 max_tokens=80)
                 elif "predictive_wake" in completed:
                     break
-            if elapsed > 70:
-                raise TimeoutError("live trial did not complete within 70 seconds")
+            if elapsed > args.trial_timeout_s:
+                raise TimeoutError(f"live trial did not complete within {args.trial_timeout_s:g} seconds")
             await asyncio.sleep(.01)
         results = runtime.results
         race_finish = results["race"]["monotonic"]
@@ -332,7 +386,9 @@ async def self_test(args):
                            "predictive_wake_executed": "predictive_wake" in results})
         summary = {
             "run_id": state.run_id, "mode": "clock_only" if args.clock_only else "clock_plus_tsfm",
-            "checks": checks, "all_checks_passed": all(checks.values()),
+            "provider": args.provider, "model_metadata": runtime.metadata,
+            "response_measurements": response_measurements(runtime),
+            **evaluate_trial(checks, results),
             "elapsed_wall_s": time.monotonic() - state.start_mono,
             "samples_ingested": state.data_revision, "llm_calls": runtime.calls,
             "frozen_context_control": results["frozen_clock"],
@@ -346,6 +402,8 @@ async def self_test(args):
                        "Sensor values are simulated at real wall time; they are not physical-device readings.",
                        "Ordinary samples update data_revision; semantic events and expiry govern output invalidation.",
                        "Clock and deadline behavior comes from runtime; TimesFM only supplies a wake-time hint.",
+                       "CLI timings include transport and client overhead; first text is observed locally.",
+                       "CLI output token caps are not enforced; model effort and token counts may differ.",
                        "No hard real-time scheduling guarantee; timings reflect this observed run."],
         }
         with (runtime.out / "summary.json").open("x") as stream:
@@ -353,6 +411,18 @@ async def self_test(args):
         print(json.dumps(summary, indent=2), flush=True)
         if not summary["all_checks_passed"]:
             raise RuntimeError("One or more live checks failed; inspect retained trace")
+    except Exception as error:
+        failure = {"run_id": runtime.out.name, "provider": args.provider,
+                   "error": f"{type(error).__name__}: {error}",
+                   "elapsed_wall_s": None if runtime.state is None else
+                   time.monotonic() - runtime.state.start_mono,
+                   "model_metadata": runtime.metadata,
+                   "results": runtime.results, "race": runtime.race,
+                   "deadlines": runtime.deadline_events,
+                   "samples_ingested": 0 if runtime.state is None else runtime.state.data_revision}
+        with (runtime.out / "failure.json").open("x") as stream:
+            json.dump(failure, stream, indent=2, allow_nan=False)
+        raise
     finally:
         runtime.close()
 
@@ -372,7 +442,7 @@ def _read_event_chunk(path, offset, identity):
 
 async def watch(args):
     """Monitor actual file arrivals or the machine's load while maintaining deadlines."""
-    runtime = LiveRuntime(args.run_dir, args.model, use_tsfm=not args.clock_only)
+    runtime = runtime_from_args(args)
     offset, file_identity, buffer, last_announced, next_report = None, None, "", -1, 0.0
     next_forecast, forecasts_made, last_value_notice = 0.0, 0, None
 
@@ -469,33 +539,56 @@ async def watch(args):
         runtime.close()
 
 
-def main():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("self-test", "watch"))
     parser.add_argument("--run-dir", required=True)
-    parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--provider", choices=("mlx", "claude", "codex"), default="mlx")
+    parser.add_argument("--model", help="Local MLX path or explicit Claude/Codex model name")
+    parser.add_argument("--effort", choices=("low", "medium", "high", "xhigh"), default="xhigh")
+    parser.add_argument("--claude-profile", default="startup", help="Profile passed to cca")
+    parser.add_argument("--request-timeout-s", type=float, default=90,
+                        help="CLI transport timeout; does not extend answer validity")
+    parser.add_argument("--trial-timeout-s", type=float, default=70,
+                        help="Post-warmup test limit; does not extend deadlines or answer validity")
     parser.add_argument("--clock-only", action="store_true", help="Skip TimesFM; clocks/events still work")
     parser.add_argument("--events", help="Append-only JSONL of sample/event/deadline objects")
     parser.add_argument("--seconds", type=float, default=60)
     parser.add_argument("--deadline-seconds", type=float)
     parser.add_argument("--change-threshold", type=float, default=1.0)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    if args.model is None:
+        args.model = {"mlx": DEFAULT_MODEL, "claude": "opus", "codex": "gpt-6-astra"}[args.provider]
+    for key in ("request_timeout_s", "trial_timeout_s"):
+        if not math.isfinite(getattr(args, key)) or getattr(args, key) <= 0:
+            parser.error(f"{key.replace('_', '-')} must be finite and positive")
     if args.seconds <= 0 or not math.isfinite(args.seconds):
         parser.error("seconds must be finite and positive")
     if args.change_threshold <= 0 or not math.isfinite(args.change_threshold):
         parser.error("change-threshold must be finite and positive")
+    return args
+
+
+def main():
+    args = parse_args()
     out = Path(args.run_dir)
     out.mkdir(parents=True, exist_ok=True)
     source_paths = [Path(__file__), *Path("src/temporal_bridge").glob("*.py")]
-    model_files = [p for p in Path(args.model).iterdir()
-                   if p.suffix in {".safetensors", ".json", ".txt", ".model"}]
-    tsfm_source = Path(importlib.util.find_spec("mlx_tsfm").origin).parent
+    model_files = ([p for p in Path(args.model).iterdir()
+                    if p.suffix in {".safetensors", ".json", ".txt", ".model"}]
+                   if args.provider == "mlx" else [])
+    tsfm_source = None
+    if not args.clock_only:
+        spec = importlib.util.find_spec("mlx_tsfm")
+        if spec is None:
+            raise SystemExit("TimesFM requires mlx-tsfm; use --clock-only to skip forecasting")
+        tsfm_source = Path(spec.origin).parent
     with (out / "manifest.json").open("x") as stream:
         json.dump({"arguments": vars(args), "platform": platform.platform(),
                    "source_sha256": {str(p): file_sha256(p) for p in source_paths},
                    "model_file_sha256": {p.name: file_sha256(p) for p in model_files},
                    "tsfm_source_sha256": {str(p.relative_to(tsfm_source)): file_sha256(p)
-                                          for p in tsfm_source.rglob("*.py")},
+                                          for p in tsfm_source.rglob("*.py")} if tsfm_source else {},
                    "dependencies": {d.metadata["Name"]: d.version
                                     for d in importlib.metadata.distributions()}}, stream, indent=2)
     asyncio.run(self_test(args) if args.mode == "self-test" else watch(args))

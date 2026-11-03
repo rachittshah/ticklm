@@ -1,0 +1,19 @@
+{
+  "specified_at_utc": "2026-11-03T06:57:19Z",
+  "status_at_specification": "No diagnostic model outputs have been produced; primary checkpoint already locked.",
+  "purpose": "Distinguish success on the four trained policies from following a new stated temporal rule.",
+  "models": ["Pinned original Qwen3-0.6B", "Adapter in selection-lock.json, unchanged"],
+  "input_view": "External clock features with explicit new rule text and raw times; no training rule text is appended.",
+  "seed": 1103,
+  "pairs_per_rule": 32,
+  "items": 192,
+  "pairs": 96,
+  "conditions": {
+    "novel_inverted": "Alert iff elapsed < threshold; wait at equality or above.",
+    "novel_window": "Alert iff lower <= elapsed <= upper; wait outside, balancing lower and upper crossings.",
+    "novel_familiar_control": "Alert iff elapsed >= threshold. Same states, choices, order and sentence structure as inverted cases, with only the comparison phrase and labels changed. Explicit parent IDs connect cases."
+  },
+  "primary_diagnostic_metric": "Both members of each counterfactual pair correct, by rule; item accuracy also reported.",
+  "interpretation": "If familiar control succeeds and novel rules fail, scope the adapter to the trained policies rather than instruction-conditioned temporal reasoning. Even success establishes only these synthetic rules, not broad real-time understanding.",
+  "selection_policy": "Diagnostic only: no retraining, checkpoint replacement or threshold tuning based on these outputs. Primary held-out protocol remains unchanged."
+}

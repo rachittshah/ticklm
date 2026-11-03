@@ -9,8 +9,8 @@ description = "Reproducible frozen TSFM and LLM temporal-evidence experiment"
 requires-python = ">=3.12"
 dependencies = [
   "numpy==2.5.4",
-  "mlx==0.32.4",
-  "mlx-lm==0.32.2",
+  "mlx==0.32.4; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "mlx-lm==0.32.2; sys_platform == 'darwin' and platform_machine == 'arm64'",
   "huggingface-hub==2.3.0",
   "safetensors==0.8.0",
 ]

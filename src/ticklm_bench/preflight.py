@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import tempfile
+import urllib.parse
 from pathlib import Path
 
 from .adapters import create_adapter
@@ -14,8 +15,9 @@ from .tasks import build_suite
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--type', choices=['mlx', 'claude_code', 'codex'], required=True)
+    parser.add_argument('--type', choices=['mlx', 'claude_code', 'codex', 'opencode', 'http'], required=True)
     parser.add_argument('--model', required=True)
+    parser.add_argument('--endpoint')
     parser.add_argument('--model-id')
     parser.add_argument('--revision')
     parser.add_argument('--quantization')
@@ -26,7 +28,16 @@ def main(argv=None):
     parser.add_argument('--max-tokens', type=int, default=64)
     parser.add_argument('--seed', type=int, default=1103)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--audit-only', action='store_true', help='Audit isolated OpenCode paths without inference')
     args = parser.parse_args(argv)
+    if args.audit_only and args.type != 'opencode':
+        parser.error('--audit-only requires --type opencode')
+    if args.type == 'http':
+        parsed = urllib.parse.urlsplit(args.endpoint or '')
+        if parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost', '::1'):
+            parser.error('HTTP preflight is restricted to a loopback endpoint')
+    elif args.endpoint:
+        parser.error('--endpoint applies only to HTTP preflight')
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists():
@@ -41,12 +52,16 @@ def main(argv=None):
         config['quantization'] = args.quantization
     if args.type == 'mlx':
         config['thinking'] = False
+    if args.type == 'http':
+        config['endpoint'] = args.endpoint
     case = build_suite('dev', pairs_per_family=1, seed=args.seed)[0]
     adapter = create_adapter(config)
     try:
-        result = adapter.generate([{'role': 'user', 'content': case['prompt']}],
-                                  max_tokens=args.max_tokens, timeout_s=args.timeout,
-                                  request_id=f'preflight-{args.type}-{args.seed}')
+        result = ({'status': 'audit_only', 'text': '', 'audit': adapter.audit_opencode()}
+                  if args.audit_only else
+                  adapter.generate([{'role': 'user', 'content': case['prompt']}],
+                                   max_tokens=args.max_tokens, timeout_s=args.timeout,
+                                   request_id=f'preflight-{args.type}-{args.seed}'))
         payload = {'scope': 'One development case; diagnostic preflight, not a benchmark score.',
                    'case': case, 'adapter_metadata': adapter.metadata, 'result': result,
                    'exact_letter_matches': result['status'] == 'ok' and result['text'].strip() == case['answer']}

@@ -152,6 +152,30 @@ def test_dev_preflight_saves_result_and_refuses_overwrite(tmp_path, monkeypatch)
         preflight.main(argv)
 
 
+def test_preflight_http_rejects_nonlocal_endpoints(tmp_path):
+    from ticklm_bench import preflight
+    with pytest.raises(SystemExit):
+        preflight.main(['--type', 'http', '--model', 'x', '--endpoint', 'https://example.com/v1',
+                        '--output', str(tmp_path / 'out.json')])
+    assert not (tmp_path / 'out.json').exists()
+
+
+def test_preflight_http_passes_loopback_endpoint(tmp_path, monkeypatch):
+    from ticklm_bench import preflight
+    configs = []
+    class Fake:
+        def __init__(self):
+            self.metadata = {}
+        def generate(self, messages, **kwargs):
+            return {'status': 'ok', 'text': 'A'}
+        def close(self):
+            pass
+    monkeypatch.setattr(preflight, 'create_adapter', lambda config: configs.append(config) or Fake())
+    preflight.main(['--type', 'http', '--model', 'x', '--endpoint', 'http://127.0.0.1:18084/v1',
+                    '--output', str(tmp_path / 'out.json')])
+    assert configs[0]['endpoint'] == 'http://127.0.0.1:18084/v1'
+
+
 def test_opencode_config_allows_only_loopback_provider_and_denies_tools():
     adapter = adapters.create_adapter({'type': 'opencode', 'model': 'ollama/qwen3:0.6b'})
     try:
@@ -166,6 +190,8 @@ def test_opencode_config_allows_only_loopback_provider_and_denies_tools():
         adapter.close()
     with pytest.raises(ValueError):
         adapters.create_adapter({'type': 'opencode', 'model': 'openai/gpt-6'})
+    with pytest.raises(ValueError):
+        adapters.create_adapter({'type': 'opencode', 'model': 'ollama/qwen3:0.6b', 'api_key': 'unused'})
 
 
 def test_opencode_json_events_preserve_final_and_reject_tool_use():
@@ -176,3 +202,31 @@ def test_opencode_json_events_preserve_final_and_reject_tool_use():
     assert result['usage']['input_tokens'] == 20 and result['usage']['output_tokens'] == 2
     with pytest.raises(ValueError, match='tool'):
         adapters._parse_opencode_events(json.dumps({'type': 'tool_use', 'part': {}}))
+
+
+def test_opencode_isolation_rejects_ambient_config_source(tmp_path):
+    work = tmp_path / 'work'
+    work.mkdir()
+    (tmp_path / 'opencode.json').write_text('{}')
+    with pytest.raises(RuntimeError, match='ambient'):
+        adapters._assert_no_ambient_opencode_config(work, managed_paths=[])
+
+
+def test_opencode_isolation_reuses_same_private_directories(monkeypatch):
+    seen = []
+    def run(command, *, cwd, env, timeout):
+        seen.append((cwd, dict(env)))
+        root = cwd.parent
+        paths = '\n'.join(f'{key} {root / key / "opencode"}' for key in ('config', 'data', 'cache', 'state'))
+        return 0, paths, ''
+    monkeypatch.setattr(adapters, '_run_opencode', run)
+    adapter = adapters.create_adapter({'type': 'opencode', 'model': 'ollama/qwen3:0.6b'})
+    try:
+        assert adapter.audit_opencode()['xdg_paths_inside_isolation']
+        assert adapter.audit_opencode()['xdg_paths_inside_isolation']
+        assert seen[0][0] == seen[1][0]
+        assert seen[0][1]['XDG_CACHE_HOME'] == seen[1][1]['XDG_CACHE_HOME']
+        assert 'OPENAI_API_KEY' not in seen[0][1]
+        assert 'ANTHROPIC_API_KEY' not in seen[0][1]
+    finally:
+        adapter.close()

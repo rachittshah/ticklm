@@ -1,0 +1,13 @@
+{
+  "system_id": "qwen3-4b-abliterated-4bit-mlx",
+  "track": "direct-generation",
+  "type": "mlx",
+  "model": "/Users/rachitt/labs/qwen3-4b-abliterated-mlx/models/qwen3-4b-abliterated-4bit",
+  "model_id": "huihui-ai/Qwen3-4B-abliterated",
+  "revision": "ee287eefef0ed77424a83c2bef5fbc145cc3bbad",
+  "quantization": "Local MLX affine 4-bit conversion, group size 64",
+  "thinking": false,
+  "max_tokens": 256,
+  "timeout_s": 120,
+  "paid": false
+}

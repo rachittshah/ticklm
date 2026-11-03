@@ -8,6 +8,7 @@ import platform
 import random
 import subprocess
 import time
+import urllib.parse
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -65,8 +66,46 @@ def _source_state():
     except (OSError, subprocess.CalledProcessError):
         commit, dirty = None, None
     return {"git_commit": commit, "git_dirty": dirty,
+            "source_root": str(root), "package_path": str(Path(__file__).resolve().parent),
             "source_sha256": {p.name: digest(p) for p in sorted(Path(__file__).parent.glob("*.py"))}}
 
+
+
+# With an immutable checkout this captures the source files as the process starts.
+_STARTUP_SOURCE = _source_state()
+_EXECUTION_SOURCES = ('runner.py', 'adapters.py', 'scoring.py', 'tasks.py', 'budget.py', 'catalog.py')
+
+
+def _execution_source():
+    current = _source_state()
+    for name in _EXECUTION_SOURCES:
+        if current['source_sha256'].get(name) != _STARTUP_SOURCE['source_sha256'].get(name):
+            raise ValueError(f'execution source changed since import: {name}')
+    return _STARTUP_SOURCE
+
+
+def _dataset_registration(dataset, dataset_hash, case_count, source, allow_unregistered):
+    dataset = Path(dataset)
+    manifest_path = dataset.parent / 'manifest.json'
+    if manifest_path.is_file():
+        frozen = json.loads(manifest_path.read_text())
+        for tier, entry in frozen.get('tiers', {}).items():
+            if (manifest_path.parent / entry['path']).resolve() != dataset.resolve():
+                continue
+            if entry['sha256'] != dataset_hash or entry['requests'] != case_count:
+                raise ValueError('frozen dataset hash or count does not match')
+            if frozen.get('instruction') != INSTRUCTION:
+                raise ValueError('frozen dataset instruction does not match')
+            frozen_sources = frozen.get('source', {}).get('source_sha256', {})
+            for name in ('tasks.py', 'scoring.py'):
+                if frozen_sources.get(name) != source['source_sha256'].get(name):
+                    raise ValueError(f'frozen {name} source does not match')
+            return {'registered': True, 'tier': tier,
+                    'freeze_manifest_sha256': digest(manifest_path),
+                    'freeze_manifest_path': str(manifest_path.resolve())}
+    if not allow_unregistered:
+        raise ValueError('unregistered dataset requires explicit opt-in')
+    return {'registered': False, 'reason': 'no matching sibling freeze tier'}
 
 def freeze(output, *, seed=11032026, pairs_per_family=16, screen_pairs=4):
     """Write test tiers sharing exact cases, plus development cases and source hashes."""
@@ -95,12 +134,68 @@ def freeze(output, *, seed=11032026, pairs_per_family=16, screen_pairs=4):
     return manifest
 
 
+
+def subset(dataset, output, *, pairs_per_family=1):
+    """Register a deterministic subset of a previously frozen dataset in a new directory."""
+    if not isinstance(pairs_per_family, int) or isinstance(pairs_per_family, bool) or pairs_per_family <= 0:
+        raise ValueError('pairs_per_family must be positive')
+    dataset = Path(dataset)
+    source = _execution_source()
+    cases = read_rows(dataset)
+    parent_hash = digest(dataset)
+    registration = _dataset_registration(dataset, parent_hash, len(cases), source, False)
+    if len({case['id'] for case in cases}) != len(cases):
+        raise ValueError('duplicate case identity')
+    by_family = {}
+    for case in cases:
+        by_family.setdefault(case['family'], {}).setdefault(case['episode_id'], []).append(case)
+    expected_families = {'duration', 'policy', 'interval', 'revision', 'event_window', 'calendar', 'chronology'}
+    if set(by_family) != expected_families:
+        raise ValueError('parent suite must contain all seven families')
+    selected = set()
+    for episodes in by_family.values():
+        try:
+            ordered = sorted(episodes, key=lambda episode: int(episode.rsplit('-', 1)[1]))
+        except (ValueError, IndexError) as exc:
+            raise ValueError('episode identity must have a numeric suffix') from exc
+        if len(ordered) < pairs_per_family:
+            raise ValueError('parent suite does not contain enough pairs per family')
+        for episode in ordered[:pairs_per_family]:
+            rows = episodes[episode]
+            if len(rows) != 4 or {(row['variant'], row['view']) for row in rows} != {
+                    (0, 'raw'), (0, 'derived'), (1, 'raw'), (1, 'derived')}:
+                raise ValueError('episode must include both variants and both views')
+            selected.add(episode)
+    result = [case for case in cases if case['episode_id'] in selected]
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=False)
+    target = output / 'micro.jsonl'
+    target.write_text(''.join(json.dumps(case, sort_keys=True) + '\n' for case in result))
+    manifest = {'created_at': now(), 'instruction': INSTRUCTION, 'source': source,
+                'parent_dataset_sha256': parent_hash,
+                'parent_freeze_manifest_sha256': registration['freeze_manifest_sha256'],
+                'parent_tier': registration['tier'],
+                'selection': {'policy': 'lowest numeric episode indices per family; preserve parent order',
+                              'pairs_per_family': pairs_per_family},
+                'tiers': {'micro': {'path': target.name, 'sha256': digest(target),
+                                    'requests': len(result), 'episodes': len(selected)}}}
+    write_json(output / 'manifest.json', manifest)
+    return manifest
+
 def _config_check(config):
     def inspect(value):
         if isinstance(value, dict):
             for key, child in value.items():
-                if key.lower() in {"api_key", "authorization", "password", "access_token", "secret"}:
+                normalized = key.lower().replace('_', '').replace('-', '')
+                if normalized in {"apikey", "authorization", "password", "accesstoken", "secret",
+                                  "token", "clientsecret"}:
                     raise ValueError("credentials must be loaded in memory, never from run configuration")
+                if normalized == 'endpoint' and isinstance(child, str):
+                    endpoint = urllib.parse.urlsplit(child)
+                    if (endpoint.scheme not in ('http', 'https') or not endpoint.hostname
+                            or endpoint.username is not None or endpoint.password is not None
+                            or endpoint.query or endpoint.fragment):
+                        raise ValueError('endpoint must not contain credentials, query, or fragment')
                 inspect(child)
         elif isinstance(value, list):
             for child in value:
@@ -120,11 +215,30 @@ def runtime_metadata():
             versions[package] = importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError:
             versions[package] = None
+    hardware = {}
+    if platform.system() == "Darwin":
+        for key, name in (("cpu", "machdep.cpu.brand_string"), ("memory_bytes", "hw.memsize")):
+            try:
+                hardware[key] = subprocess.check_output(["sysctl", "-n", name], text=True).strip()
+            except (OSError, subprocess.CalledProcessError):
+                hardware[key] = None
     return {"python": platform.python_version(), "os": platform.system(),
-            "os_release": platform.release(), "machine": platform.machine(), "packages": versions}
+            "os_release": platform.release(), "machine": platform.machine(),
+            "hardware": hardware, "packages": versions}
 
 
-def run(dataset, config_file, output, *, ledger_path=None, resume=False):
+def local_identity(config):
+    model = Path(config.get("model", ""))
+    if not model.is_dir():
+        return None
+    names = {"config.json", "generation_config.json", "tokenizer.json", "tokenizer_config.json",
+             "special_tokens_map.json", "vocab.json", "merges.txt", "model.safetensors.index.json"}
+    return {p.name: {"sha256": digest(p), "bytes": p.stat().st_size}
+            for p in sorted(model.iterdir()) if p.is_file()
+            and (p.name in names or p.suffix in {".safetensors", ".jinja", ".model"})}
+
+
+def run(dataset, config_file, output, *, ledger_path=None, resume=False, allow_unregistered=False):
     """Persist each attempt before execution; never silently retry an uncertain request."""
     config = _config_check(json.loads(Path(config_file).read_text()))
     cases = read_rows(dataset)
@@ -133,15 +247,23 @@ def run(dataset, config_file, output, *, ledger_path=None, resume=False):
     output = Path(output)
     dataset_hash = digest(dataset)
     config_hash = digest(config_file)
+    source = _execution_source()
+    registration = _dataset_registration(dataset, dataset_hash, len(cases), source, allow_unregistered)
     if resume:
         manifest = json.loads((output / "manifest.json").read_text())
         if manifest["dataset_sha256"] != dataset_hash or manifest["config_sha256"] != config_hash:
             raise ValueError("resume requires identical dataset and configuration")
+        old_sources = manifest.get('source', {}).get('source_sha256', {})
+        if any(old_sources.get(name) != source['source_sha256'].get(name) for name in _EXECUTION_SOURCES):
+            raise ValueError('resume requires identical execution source')
+        if manifest.get('dataset_registration') != registration:
+            raise ValueError('resume requires identical dataset registration')
     else:
         output.mkdir(parents=True, exist_ok=False)
         manifest = {"run_id": str(uuid.uuid4()), "started_at": now(), "config": config,
                     "config_sha256": config_hash, "dataset_sha256": dataset_hash,
-                    "expected_requests": len(cases), "source": _source_state(),
+                    "expected_requests": len(cases), "source": source,
+                    "dataset_registration": registration,
                     "runtime": runtime_metadata(), "status": "running"}
         write_json(output / "manifest.json", manifest)
         (output / "cases.jsonl").write_bytes(Path(dataset).read_bytes())
@@ -163,6 +285,7 @@ def run(dataset, config_file, output, *, ledger_path=None, resume=False):
             return manifest
     adapter = create_adapter(adapter_config)
     manifest["adapter"] = adapter.metadata
+    manifest["local_model_files"] = local_identity(config)
     write_json(output / "manifest.json", manifest)
     max_tokens, timeout = config.get("max_tokens", 256), config.get("timeout_s", 120)
     stopping_reason = None
@@ -198,7 +321,7 @@ def run(dataset, config_file, output, *, ledger_path=None, resume=False):
                               "charged_usd": str(settlement.charged_usd),
                               "unknown": settlement.unknown, "blocked": settlement.blocked}
             row = {"request_id": request_id, "case": case, "result": result,
-                   "predicted": parse_answer(result.get("text", "")),
+                   "predicted": parse_answer(result.get("text", "")) if result["status"] == "ok" else None,
                    "completed_at": now(), "accounting": accounting}
             append_row(record_path, row)
             records.append(row)
@@ -230,17 +353,26 @@ def main(argv=None):
     frozen = commands.add_parser("freeze")
     frozen.add_argument("--output", required=True)
     frozen.add_argument("--seed", type=int, default=11032026)
+    micro = commands.add_parser("subset")
+    micro.add_argument("--dataset", required=True)
+    micro.add_argument("--output", required=True)
+    micro.add_argument("--pairs-per-family", type=int, default=1)
     executed = commands.add_parser("run")
     executed.add_argument("--dataset", required=True)
     executed.add_argument("--config", required=True)
     executed.add_argument("--output", required=True)
     executed.add_argument("--ledger")
     executed.add_argument("--resume", action="store_true")
+    executed.add_argument("--allow-unregistered", action="store_true",
+                          help="Allow a dataset absent from a sibling freeze manifest")
     args = parser.parse_args(argv)
     if args.command == "freeze":
         result = freeze(args.output, seed=args.seed)
+    elif args.command == "subset":
+        result = subset(args.dataset, args.output, pairs_per_family=args.pairs_per_family)
     else:
-        result = run(args.dataset, args.config, args.output, ledger_path=args.ledger, resume=args.resume)
+        result = run(args.dataset, args.config, args.output, ledger_path=args.ledger, resume=args.resume,
+                     allow_unregistered=args.allow_unregistered)
     print(json.dumps(result, indent=2))
     return 0 if result.get("status", "complete") == "complete" else 2
 

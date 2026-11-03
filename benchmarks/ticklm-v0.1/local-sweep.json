@@ -1,0 +1,13 @@
+{
+  "selection": "Predeclared model-family coverage; only transport/runtime preflight failure excludes a model. No selection on accuracy.",
+  "runs": [
+    {"config":"artifacts/benchmark-v1-20261103/provision/gemma3/config.json", "preflight":"artifacts/ticklm-bench-preflight/gemma3.json", "dataset":"artifacts/benchmark-v1-20261103/frozen/screen.jsonl", "output":"artifacts/benchmark-v1-20261103/runs/gemma3-screen"},
+    {"config":"artifacts/benchmark-v1-20261103/provision/lfm25/config.json", "preflight":"artifacts/ticklm-bench-preflight/lfm25.json", "dataset":"artifacts/benchmark-v1-20261103/frozen/screen.jsonl", "output":"artifacts/benchmark-v1-20261103/runs/lfm25-screen"},
+    {"config":"artifacts/benchmark-v1-20261103/provision/llama32/config.json", "preflight":"artifacts/ticklm-bench-preflight/llama32.json", "dataset":"artifacts/benchmark-v1-20261103/frozen/screen.jsonl", "output":"artifacts/benchmark-v1-20261103/runs/llama32-screen"},
+    {"config":"artifacts/benchmark-v1-20261103/provision/phi4/config.json", "preflight":"artifacts/ticklm-bench-preflight/phi4.json", "dataset":"artifacts/benchmark-v1-20261103/frozen/screen.jsonl", "output":"artifacts/benchmark-v1-20261103/runs/phi4-screen"},
+    {"config":"artifacts/benchmark-v1-20261103/provision/qwen35/config.json", "preflight":"artifacts/ticklm-bench-preflight/qwen35.json", "dataset":"artifacts/benchmark-v1-20261103/frozen/screen.jsonl", "output":"artifacts/benchmark-v1-20261103/runs/qwen35-screen"},
+    {"config":"benchmarks/ticklm-v0.1/configs/qwen3-4b-abliterated-mlx.json", "preflight":"artifacts/ticklm-bench-preflight/qwen3-4b.json", "dataset":"artifacts/benchmark-v1-20261103/frozen/screen.jsonl", "output":"artifacts/benchmark-v1-20261103/runs/qwen3-4b-screen"},
+    {"config":"benchmarks/ticklm-v0.1/configs/qwen3-06b-mlx.json", "preflight":"artifacts/ticklm-bench-preflight/mlx-qwen3-06b.json", "dataset":"artifacts/benchmark-v1-20261103/frozen/full.jsonl", "output":"artifacts/benchmark-v1-20261103/runs/qwen3-06b-full"},
+    {"config":"artifacts/benchmark-v1-20261103/provision/smollm3/config.json", "preflight":"artifacts/ticklm-bench-preflight/smollm3.json", "dataset":"artifacts/benchmark-v1-20261103/frozen/full.jsonl", "output":"artifacts/benchmark-v1-20261103/runs/smollm3-full"}
+  ]
+}

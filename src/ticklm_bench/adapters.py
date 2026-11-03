@@ -125,7 +125,7 @@ def _parse_opencode_events(output):
         kind = event.get('type')
         part = event.get('part') or {}
         if not isinstance(part, dict):
-            raise ValueError('invalid opencode event')
+            raise TypeError('invalid opencode event')
         if isinstance(kind, str) and kind not in result['event_types']:
             result['event_types'].append(kind)
         if kind in ('tool_use', 'tool', 'tool_call') or part.get('type') in ('tool', 'tool_use', 'tool_call'):
@@ -164,6 +164,15 @@ def _run_opencode(command, *, cwd, env, timeout):
     return proc.returncode, stdout, stderr
 
 
+def _assert_no_ambient_opencode_config(work, managed_paths):
+    for directory in (work, *work.parents):
+        for relative in ('opencode.json', 'opencode.jsonc', '.opencode/opencode.json', '.opencode/opencode.jsonc'):
+            if (directory / relative).exists():
+                raise RuntimeError('ambient opencode project configuration exists')
+    if any(Path(path).exists() for path in managed_paths):
+        raise RuntimeError('ambient opencode managed configuration exists')
+
+
 class Adapter:
     def __init__(self, config):
         if not isinstance(config, dict) or config.get('type') not in {'mlx', 'http', 'claude_code', 'codex', 'opencode'}:
@@ -186,7 +195,7 @@ class Adapter:
         self.capabilities = {'hard_token_cap': True if kind == 'mlx' else
                              (False if kind in ('claude_code', 'codex', 'opencode') else config.get('hard_token_cap')),
                              'sampling_seed': False if kind in ('mlx', 'claude_code', 'codex', 'opencode') else config.get('sampling_seed'),
-                             'streaming': False if kind == 'opencode' else True,
+                             'streaming': kind != 'opencode',
                              'thinking': config.get('thinking_supported')}
         self.metadata = {'type': kind, 'provider': config.get('provider', kind),
                          'requested_model': config.get('model_id', config['model']),
@@ -204,7 +213,9 @@ class Adapter:
             self._endpoint = url.rstrip('/')
             self.metadata['endpoint'] = _redact(self._endpoint, self._secret)
         if kind == 'opencode':
-            if config['model'] != _OLLAMA_MODEL or config.get('endpoint', 'http://127.0.0.1:11434/v1') != 'http://127.0.0.1:11434/v1':
+            if (config['model'] != _OLLAMA_MODEL or self._secret is not None or
+                    config.get('model_id', _OLLAMA_MODEL) != _OLLAMA_MODEL or
+                    config.get('endpoint', 'http://127.0.0.1:11434/v1') != 'http://127.0.0.1:11434/v1'):
                 raise ValueError('opencode is restricted to the pinned local Ollama model and endpoint')
             self.metadata['endpoint'] = 'http://127.0.0.1:11434/v1'
 
@@ -247,7 +258,7 @@ class Adapter:
                 self._generate_opencode(result, messages, timeout_s, started)
             else:
                 self._generate_native(result, messages, max_tokens, timeout_s, started)
-            if result['status'] == 'ok' and self._config['type'] != 'mlx':
+            if result['status'] == 'ok' and self._config['type'] not in ('mlx', 'opencode'):
                 self._identity(result)
         except TimeoutError:
             result['status'], result['error'] = 'timeout', {'code': 'timeout'}
@@ -427,10 +438,15 @@ class Adapter:
         for key in ('config', 'data', 'cache', 'state'):
             if key not in paths or not Path(paths[key]).resolve().is_relative_to(root):
                 raise RuntimeError('opencode did not honor isolated XDG paths')
-        return {'xdg_paths_inside_isolation': True, 'config_sha256': hashlib.sha256(
+        managed = ['/Library/Application Support/opencode',
+                   '/Library/Managed Preferences/ai.opencode.managed.plist',
+                   f'/Library/Managed Preferences/{os.environ.get("USER", "")}/ai.opencode.managed.plist']
+        _assert_no_ambient_opencode_config(root / 'work', managed)
+        return {'xdg_paths_inside_isolation': True, 'ambient_project_and_managed_config_absent': True,
+                'config_sha256': hashlib.sha256(
             json.dumps(self._opencode_config(), sort_keys=True).encode()).hexdigest(),
                 'provider': 'ollama', 'endpoint': 'http://127.0.0.1:11434/v1',
-                'other_providers_denied': True, 'tools_denied_by_config': True}
+                'other_providers_deny_policy_configured': True, 'tools_deny_policy_configured': True}
 
     def _generate_opencode(self, result, messages, timeout_s, started):
         if len(messages) != 1 or messages[0]['role'] != 'user':
@@ -461,6 +477,8 @@ class Adapter:
         result['raw_safe_metadata'].update({'opencode_config_audit': audit, 'ollama_digest': _OLLAMA_DIGEST,
                                             'ollama_inventory_matches': True,
                                             'event_types': parsed['event_types'],
+                                            'completion_evidence': ('step_finish_event' if parsed['finish_reason']
+                                                                    else 'cli_exit_only_finish_reason_unavailable'),
                                             'retry_policy': 'native_client_internal_unknown',
                                             'timeout_enforcement': 'process_group_timeout',
                                             'identity_validation': 'selected_model_and_inventory_only'})

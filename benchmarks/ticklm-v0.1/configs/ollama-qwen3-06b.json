@@ -1,0 +1,16 @@
+{
+  "system_id": "qwen3-06b-q4km-ollama",
+  "track": "local-http",
+  "type": "http",
+  "provider": "ollama",
+  "model": "qwen3:0.6b",
+  "endpoint": "http://127.0.0.1:11434/v1",
+  "revision": "sha256:3bae9c93586b27bedaa979979733c2b0edd1d0defc745e9638f2161192a0ccf0",
+  "quantization": "GGUF Q4_K_M",
+  "thinking": false,
+  "extra_body": {"reasoning_effort": "none"},
+  "hard_token_cap": true,
+  "max_tokens": 256,
+  "timeout_s": 120,
+  "paid": false
+}

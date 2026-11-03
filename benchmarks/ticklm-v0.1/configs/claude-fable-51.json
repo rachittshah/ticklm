@@ -1,0 +1,12 @@
+{
+  "system_id": "claude-fable-51-cca-startup-xhigh",
+  "track": "native-client",
+  "type": "claude_code",
+  "model": "claude-fable-5-1",
+  "profile": "startup",
+  "effort": "xhigh",
+  "max_tokens": 256,
+  "timeout_s": 120,
+  "paid": false,
+  "accounting_note": "Existing sign-in; client cost estimates are not direct API billing. Output cap unsupported."
+}

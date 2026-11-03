@@ -20,9 +20,11 @@ dev = ["pytest==9.2.0", "ruff==0.17.3"]
 
 [project.scripts]
 temporal-bridge = "temporal_bridge.experiment:main"
+ticklm-bench = "ticklm_bench.runner:main"
+ticklm-catalog = "ticklm_bench.catalog:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/temporal_bridge"]
+packages = ["src/temporal_bridge", "src/ticklm_bench"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -22,16 +22,17 @@ from .surgery import (
     write_records,
 )
 from .surgery_data import deterministic_answer, render_prompt
+from .surgery_features import with_feature_view
 
 
-def make_case(family, state, choices, case_id):
+def make_case(family, state, choices, case_id, input_view="raw"):
     """Build a live snapshot; only the rendered causal state reaches the model."""
     case = {"id": case_id, "family": family, "split": "live", "state": dict(state),
             "choices": dict(choices)}
     case["prompt"] = render_prompt("test", family, state, choices)
     case["answer"] = deterministic_answer(case)
     case["correct_action"] = choices[case["answer"]]
-    return case
+    return with_feature_view([case], input_view)[0]
 
 
 def release_assessment(case, prediction, current_state):
@@ -47,13 +48,13 @@ def release_assessment(case, prediction, current_state):
             "guard_uses_deterministic_reference": True}
 
 
-def run_live(model, tokenizer, limit, *, threshold_s=1.5, cancel_delay_s=0.005):
+def run_live(model, tokenizer, limit, *, threshold_s=1.5, cancel_delay_s=0.005, input_view="raw"):
     if threshold_s <= 0 or cancel_delay_s < 0:
         raise ValueError("threshold must be positive and cancellation delay nonnegative")
     silence_choices = {"A": "alert", "B": "wait", "C": "restart", "D": "cancel"}
     relevance_choices = {"A": "continue", "B": "replan", "C": "stop", "D": "wait"}
     warm = make_case("silence", {"now": 0.0, "last_event": 0.0, "threshold": threshold_s},
-                     silence_choices, "warmup")
+                     silence_choices, "warmup", input_view)
     evaluate_cases(model, tokenizer, [warm], limit, 1)
     origin = time.monotonic()
     lock = threading.RLock()
@@ -69,6 +70,7 @@ def run_live(model, tokenizer, limit, *, threshold_s=1.5, cancel_delay_s=0.005):
             return {"now": elapsed(), "last_event": latest_event, "threshold": threshold_s}
 
     def predict(case, current_state):
+        case = with_feature_view([case], input_view)[0]
         started = elapsed()
         result, _ = evaluate_cases(model, tokenizer, [case], limit, 1)
         completed = elapsed()
@@ -117,6 +119,7 @@ def run_live(model, tokenizer, limit, *, threshold_s=1.5, cancel_delay_s=0.005):
     predict(make_case("relevance", plan_state(), relevance_choices, "after-cancellation"), plan_state)
     summary = {
         "clock": "time.monotonic", "duration_s": elapsed(), "threshold_s": threshold_s,
+        "input_view": input_view,
         "cancel_delay_s": cancel_delay_s, "count": len(records),
         "snapshot_correct": sum(record["snapshot_correct"] for record in records),
         "publishable": sum(record["publishable"] for record in records),
@@ -137,6 +140,7 @@ def main(argv=None):
     parser.add_argument("--output", required=True)
     parser.add_argument("--threshold-s", type=float, default=1.5)
     parser.add_argument("--cancel-delay-s", type=float, default=0.005)
+    parser.add_argument("--input-view", choices=("raw", "clock-features"), default="raw")
     args = parser.parse_args(argv)
     output = Path(args.output)
     reserve_output(output)
@@ -149,7 +153,8 @@ def main(argv=None):
         "live_source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     })
     records, summary = run_live(model, tokenizer, context_limit(args.model),
-                                threshold_s=args.threshold_s, cancel_delay_s=args.cancel_delay_s)
+                                threshold_s=args.threshold_s, cancel_delay_s=args.cancel_delay_s,
+                                input_view=args.input_view)
     write_records(output / "cases.jsonl", records)
     atomic_json(output / "summary.json", summary)
 

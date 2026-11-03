@@ -155,3 +155,31 @@ def test_probe_saves_head_and_reuses_it_for_held_out_split(tmp_path, monkeypatch
     assert json.loads((test / 'metrics.json').read_text())['complete_pairs'] == 2
     with pytest.raises(ValueError, match='does not match'):
         controls.probe(Model(), Tokenizer(), args, {'base': 'different'})
+
+
+def test_robustness_applies_clock_view_to_primary_and_each_control(tmp_path, monkeypatch):
+    seen = []
+
+    def evaluate(model, tokenizer, cases, limit, batch_size):
+        seen.append(cases)
+        records = [{**case, 'prediction': case['answer'], 'correct': True} for case in cases]
+        return records, {'accuracy': 1.0}
+
+    monkeypatch.setattr(controls, 'evaluate_cases', evaluate)
+    monkeypatch.setattr(controls, 'context_limit', lambda path: 1000)
+    args = Namespace(model='unused', split='dev', output=str(tmp_path), seed=1103,
+                     pairs_per_family=1, batch_size=2, input_view='clock-features')
+    controls.robustness(None, None, args)
+    assert len(seen) == 4
+    assert all(case['prompt'].startswith('Clock features: ') for cases in seen for case in cases)
+    for name in ('primary', 'option_rotation', 'time_translation', 'in_range_numbers'):
+        saved = json.loads((tmp_path / 'datasets' / f'robustness_{name}.json').read_text())
+        assert saved and all(case['prompt'].startswith('Clock features: ') for case in saved)
+
+
+@pytest.mark.parametrize('command', ['retention', 'probe'])
+def test_nonraw_view_is_rejected_before_output_or_model_load(tmp_path, command):
+    with pytest.raises(SystemExit):
+        controls.main([command, '--input-view', 'clock-features', '--model', 'unused',
+                       '--revision', 'r', '--output', str(tmp_path / 'out')])
+    assert not (tmp_path / 'out').exists()

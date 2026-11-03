@@ -44,3 +44,14 @@ def test_live_prompt_does_not_include_gold_metadata():
     assert "correct_action" not in case["prompt"]
     with pytest.raises(ValueError):
         release_assessment(case, "Z", case["state"])
+
+
+def test_live_feature_view_preserves_state_and_guard_semantics():
+    state = {"now": 1.5, "last_event": 0.5, "threshold": 2.0}
+    raw = make_case("silence", state, CHOICES, "raw")
+    featured = make_case("silence", state, CHOICES, "featured", input_view="clock-features")
+    assert featured["state"] == raw["state"]
+    assert featured["answer"] == raw["answer"]
+    assert featured["prompt"] != raw["prompt"]
+    assert featured["prompt"].endswith(raw["prompt"])
+    assert release_assessment(featured, "B", state) == release_assessment(raw, "B", state)

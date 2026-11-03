@@ -35,6 +35,7 @@ from .surgery import (
     write_records,
 )
 from .surgery_data import build_cases, build_robustness_cases, deterministic_answer
+from .surgery_features import with_feature_view
 
 _PASSAGES = {
     "dev": (
@@ -74,7 +75,8 @@ def distribution_sums(base_logits, adapted_logits, targets, mask):
 
 def robustness(model, tokenizer, args):
     limit = context_limit(args.model)
-    primary = build_cases(args.split, pairs_per_family=args.pairs_per_family, seed=args.seed)
+    primary = with_feature_view(
+        build_cases(args.split, pairs_per_family=args.pairs_per_family, seed=args.seed), args.input_view)
     require_split(primary, args.split)
     save_dataset(args.output, "robustness_primary", primary)
     records, metrics = evaluate_cases(model, tokenizer, primary, limit, args.batch_size)
@@ -83,6 +85,7 @@ def robustness(model, tokenizer, args):
     summaries = {"primary": metrics}
     controls = build_robustness_cases(args.split, pairs_per_family=args.pairs_per_family, seed=args.seed)
     for name, cases in controls.items():
+        cases = with_feature_view(cases, args.input_view)
         require_split(cases, args.split)
         save_dataset(args.output, f"robustness_{name}", cases)
         records, metrics = evaluate_cases(model, tokenizer, cases, limit, args.batch_size)
@@ -280,6 +283,7 @@ def main(argv=None):
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--pairs-per-family", type=int, default=32)
     parser.add_argument("--seed", type=int, default=1103)
+    parser.add_argument("--input-view", choices=["raw", "clock-features"], default="raw")
     parser.add_argument("--train-pairs-per-family", type=int, default=128)
     parser.add_argument("--probe-head", help="Previously saved head.npz; required for probe test")
     args = parser.parse_args(argv)
@@ -291,6 +295,8 @@ def main(argv=None):
         parser.error("probe test requires --probe-head; dev trains a new head")
     if args.command != "probe" and args.probe_head:
         parser.error("--probe-head applies only to probe")
+    if args.command != "robustness" and args.input_view != "raw":
+        parser.error("clock-features input is supported only for robustness")
     started = perf_counter()
     reserve_output(args.output)
     identity = base_identity(args.model)

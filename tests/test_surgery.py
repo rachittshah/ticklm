@@ -134,6 +134,8 @@ def test_provenance_includes_versions_source_and_saved_dataset(tmp_path):
     provenance = surgery.runtime_provenance()
     assert provenance["packages"]["mlx-lm"]
     assert len(provenance["source_sha256"]["surgery.py"]) == 64
+    if (surgery.Path(surgery.__file__).parent / "surgery_features.py").exists():
+        assert len(provenance["source_sha256"]["surgery_features.py"]) == 64
     cases = [{"id": "one", "split": "train"}]
     surgery.save_dataset(tmp_path, "train", cases)
     manifest = json.loads((tmp_path / "run.json").read_text())
@@ -225,6 +227,10 @@ def test_training_loop_keeps_dev_selection_and_reload_parity(
         return [{"id": f"{split}-{i}", "pair_id": split, "split": split,
                  "family": "temporal", "prompt": "question", "answer": "A"} for i in range(2)]
     requested_retention = []
+    views = []
+    def transform(cases, view):
+        views.append((cases[0]["split"], view))
+        return [{**case, "prompt": case["prompt"] + " FEATURE"} for case in cases]
     def curriculum_cases(pairs_per_family, seed):
         requested.append(("curriculum_train", pairs_per_family))
         return [{"id": f"curriculum-{i}", "pair_id": "curriculum", "split": "train",
@@ -242,15 +248,18 @@ def test_training_loop_keeps_dev_selection_and_reload_parity(
     monkeypatch.setattr(surgery_data, "build_curriculum_cases", curriculum_cases, raising=False)
     monkeypatch.setattr(surgery_data, "build_retention_cases", retention)
     monkeypatch.setattr(surgery, "load", load_base)
+    monkeypatch.setattr(surgery, "apply_input_view", transform, raising=False)
     (tmp_path / "config.json").write_text('{"max_position_embeddings": 64}')
     cli = Namespace(model=str(tmp_path), output=str(tmp_path / "run"), seed=9,
                     pairs_per_family=3, dev_pairs_per_family=1, layers=1, rank=1, learning_rate=.01,
                     steps=2, batch_size=2, eval_batch_size=2, revision="rev", loss=loss,
                     anchor_every=anchor_every, shuffle_labels=True, curriculum=curriculum,
-                    paired_batches=paired)
+                    paired_batches=paired, input_view="clock-features")
     surgery.run_train(cli, model, Tokenizer(), {"base": "hash"})
     assert json.loads((tmp_path / "run" / "reload_parity.json").read_text())["passed"]
     assert (tmp_path / "run" / "checkpoint-000001" / "retention_dev_metrics.json").exists()
+    checkpoint_manifest = json.loads((tmp_path / "run" / "checkpoint-000001" / "manifest.json").read_text())
+    assert checkpoint_manifest["training_input_view"] == "clock-features"
     assert requested == [(("curriculum_train" if curriculum else "train"), 3), ("dev", 1)]
     logs = json.loads((tmp_path / "run" / "training_log.json").read_text())
     assert logs[0]["data_source"] == "temporal_train"
@@ -258,6 +267,42 @@ def test_training_loop_keeps_dev_selection_and_reload_parity(
     assert logs[1]["data_source"] == ("retention_train" if anchor_every else "temporal_train")
     assert logs[1]["loss_mode"] == ("full" if anchor_every else loss)
     assert requested_retention == (["dev", "train"] if anchor_every else ["dev"])
+    assert views == [("train", "clock-features"), ("dev", "clock-features")]
     actual_labels = json.loads((tmp_path / "run" / "datasets" / "training_labels.json").read_text())
     train_cases = json.loads((tmp_path / "run" / "datasets" / "temporal_train.json").read_text())
     assert [r["true_answer"] for r in actual_labels] == [case["answer"] for case in train_cases]
+    assert train_cases[0]["prompt"].endswith(" FEATURE")
+    retention_cases = json.loads((tmp_path / "run" / "datasets" / "retention_dev.json").read_text())
+    assert retention_cases[0]["prompt"] == "question"
+
+
+def test_evaluate_command_applies_view_only_to_temporal_cases(tmp_path, monkeypatch):
+    import sys
+
+    from temporal_bridge import surgery_data
+
+    cases = [{"id": "t", "split": "dev", "answer": "A", "prompt": "temporal"}]
+    retention = [{"id": "r", "split": "dev", "answer": "A", "prompt": "retention"}]
+    evaluated = []
+    monkeypatch.setattr(surgery_data, "build_cases", lambda *a, **k: cases)
+    monkeypatch.setattr(surgery_data, "build_retention_cases", lambda **k: retention)
+    monkeypatch.setattr(surgery_data, "deterministic_answer", lambda case: "A")
+    monkeypatch.setattr(surgery, "apply_input_view",
+                        lambda source, view: [{**c, "prompt": c["prompt"] + " " + view} for c in source],
+                        raising=False)
+    monkeypatch.setattr(surgery, "base_identity", lambda path: {})
+    monkeypatch.setattr(surgery, "load", lambda path: (object(), object()))
+    monkeypatch.setattr(surgery, "get_total_parameters", lambda model: 1)
+    monkeypatch.setattr(surgery, "checkpoint_parameter_count", lambda path: 1)
+    monkeypatch.setattr(surgery, "context_limit", lambda path: 64)
+    def evaluate(model, tokenizer, source, limit, batch_size):
+        evaluated.append(source)
+        return source, {}
+    monkeypatch.setattr(surgery, "evaluate_cases", evaluate)
+    monkeypatch.setattr(sys, "argv", ["surgery", "evaluate", "--model", "unused", "--revision", "rev",
+                                      "--output", str(tmp_path / "run"), "--input-view", "clock-features"])
+    surgery.main()
+    assert evaluated[0][0]["prompt"] == "temporal clock-features"
+    assert evaluated[1][0]["prompt"] == "retention"
+    manifest = json.loads((tmp_path / "run" / "run.json").read_text())
+    assert manifest["args"]["input_view"] == "clock-features"

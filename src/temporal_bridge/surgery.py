@@ -70,11 +70,19 @@ def training_labels(cases, seed, shuffle):
 
 def runtime_provenance():
     source_dir = Path(__file__).parent
+    sources = ["surgery.py", "surgery_data.py"]
+    if (source_dir / "surgery_features.py").exists():
+        sources.append("surgery_features.py")
     return {"python": sys.version, "platform": platform.platform(),
             "packages": {name: importlib.metadata.version(name)
                          for name in ("mlx", "mlx-lm", "numpy", "transformers")},
             "source_sha256": {name: hashlib.sha256((source_dir / name).read_bytes()).hexdigest()
-                              for name in ("surgery.py", "surgery_data.py")}}
+                              for name in sources}}
+
+
+def apply_input_view(cases, view):
+    from .surgery_features import with_feature_view
+    return with_feature_view(cases, view)
 
 
 def save_dataset(output, name, cases):
@@ -319,7 +327,7 @@ def write_records(path, records):
             os.unlink(temp)
 
 
-def save_adapter(model, directory, config, layers, identity, revision, counts, step):
+def save_adapter(model, directory, config, layers, identity, revision, counts, step, input_view="raw"):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
     weights = dict(tree_flatten(model.trainable_parameters()))
@@ -327,7 +335,8 @@ def save_adapter(model, directory, config, layers, identity, revision, counts, s
     atomic_json(directory / "adapter_config.json", {"fine_tune_type": "lora", "num_layers": layers,
                                                      "lora_parameters": config})
     atomic_json(directory / "manifest.json", {"base_hashes": identity, "revision": revision,
-                                               "parameters": counts, "step": step})
+                                               "parameters": counts, "step": step,
+                                               "training_input_view": input_view})
 
 
 def inspect_model(model, tokenizer, output):
@@ -352,6 +361,8 @@ def run_train(args, model, tokenizer, identity):
     retention_dev = build_retention_cases("dev")
     require_split(train, "train"); require_split(dev, "dev")
     require_split(retention_dev, "dev")
+    train = apply_input_view(train, args.input_view)
+    dev = apply_input_view(dev, args.input_view)
     output = Path(args.output); output.mkdir(parents=True, exist_ok=True)
     save_dataset(output, "temporal_train", train)
     save_dataset(output, "temporal_dev", dev)
@@ -400,7 +411,8 @@ def run_train(args, model, tokenizer, identity):
         if step % interval == 0 or step == args.steps:
             records, metrics = evaluate_cases(model, tokenizer, dev, context_limit(args.model), args.eval_batch_size)
             checkpoint = output / f"checkpoint-{step:06d}"
-            save_adapter(model, checkpoint, config, args.layers, identity, args.revision, counts, step)
+            save_adapter(model, checkpoint, config, args.layers, identity, args.revision, counts, step,
+                         input_view=args.input_view)
             write_records(checkpoint / "dev.jsonl", records)
             atomic_json(checkpoint / "dev_metrics.json", metrics)
             retention_records, retention_metrics = evaluate_cases(
@@ -467,6 +479,7 @@ def main():
                         help="Use train-only time-scale and offset augmentation")
     parser.add_argument("--paired-batches", action="store_true",
                         help="Sample whole counterfactual pairs; requires an even batch size")
+    parser.add_argument("--input-view", choices=["raw", "clock-features"], default="raw")
     args = parser.parse_args()
     if (min(args.steps, args.batch_size, args.eval_batch_size, args.pairs_per_family,
             args.dev_pairs_per_family) <= 0 or args.learning_rate <= 0 or args.anchor_every < 0):
@@ -499,6 +512,7 @@ def main():
         from .surgery_data import build_cases, build_retention_cases, deterministic_answer
         cases = build_cases(args.split, pairs_per_family=args.pairs_per_family, seed=args.seed)
         require_split(cases, args.split)
+        cases = apply_input_view(cases, args.input_view)
         save_dataset(output, f"temporal_{args.split}", cases)
         records, metrics = evaluate_cases(model, tokenizer, cases, context_limit(args.model), args.batch_size)
         metrics["deterministic_reference_accuracy"] = sum(

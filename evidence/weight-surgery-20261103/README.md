@@ -27,3 +27,25 @@ Dataset hashes matter independently of source hashes: adding helper functions ch
 | [duration-baseline-and-retention-failure.tar.gz](duration-baseline-and-retention-failure.tar.gz) | Unadapted duration-input baseline, raw curriculum token-distribution and generation checks, and pair-bootstrap comparison with the original raw-input baseline. Includes the repeated incorrect `100` response to `17 plus 25`. | `b6a9c814e65739400e17cdd87e27f6bab066286da337a2ba615a8ffc6315cafa` |
 
 These archives contain development results. The duration-input baseline is a distinct condition: the program supplies subtracted durations, so it cannot be interpreted as a test of the model independently calculating elapsed time. Pair-bootstrap intervals resample complete pairs and describe variability within this synthetic sample.
+
+## Completed experiment
+
+Read [the result report](../../docs/weight-surgery-results.md) for the model identities, comparison table, actual clock readings, language failures, routing design, and limits. [selection-lock.json](selection-lock.json) fixes the chosen checkpoint and protocol before held-out evaluation; [novel-rule-protocol.json](novel-rule-protocol.json) fixes the additional unfamiliar-rule diagnostic before its model outputs were produced.
+
+| Archive | Contents | SHA-256 |
+|---|---|---|
+| [clock-feature-development.tar.gz](clock-feature-development.tar.gz) | First successful clock-feature training run, its language regression and robustness controls, first gate verification, unaugmented frozen-probe control, and intermediate verification transcripts. | `c37b074d3a04b83366c6ffc37dfab7c40cbca593f7f177bdceb4a54c2e5cbc19` |
+| [preservation-development.tar.gz](preservation-development.tar.gz) | Selected distillation training run, its remaining language failure, exact gated parity, frozen classifier trained on the identical temporal curriculum, and the second Fable 5.1 review with its prompt. | `d6287b14b843720241a2b41caf28e7f4b2a042192bdc277c1643b982bb614f49` |
+| [final-evaluation.tar.gz](final-evaluation.tar.gz) | Full shuffled-answer control run; held-out base, selected, shuffled and frozen-head results; raw-input transfer; unfamiliar-rule results; live base/selected runs; final robustness and language checks; five paired-bootstrap reports; final software verification. | `e0d3fda3858f396aa1fbeab7b66baedef02dfd4389a4c08a02f5aa7040523f7c` |
+
+All archives exclude `*.safetensors` and `*.npz`; local weights and array artifacts remain available under the original ignored run directories. This includes the trained adapters, teacher distributions, probe features/head, and gate-check full-vocabulary arrays. JSON measurements, exact datasets, per-case predictions, ordinary generated text, source hashes, training-label assignments, configurations, and logs are retained in the archives.
+
+For example, inspect the primary result and actual live decisions directly:
+
+```sh
+tar -xOzf evidence/weight-surgery-20261103/final-evaluation.tar.gz selected-test-features/metrics.json
+tar -xOzf evidence/weight-surgery-20261103/final-evaluation.tar.gz live-selected/cases.jsonl
+tar -xOzf evidence/weight-surgery-20261103/final-evaluation.tar.gz novel-selected/metrics.json
+```
+
+The shuffled control's automatic suggestion was step 240; the locked comparison deliberately uses **step 480**, matching the selected real-label adapter. The selected model's ordinary-language mode must disable the adapter. Its perfect held-out trained-policy result must be read alongside **0/32 reversed-rule pairs**, **16/32 window-rule pairs**, and its incorrect active-mode arithmetic answer.

@@ -8,7 +8,7 @@ TickLM adds a small program around a language model. That program watches the cl
 
 The controller and TimesFM run locally. Language responses can come from local Qwen, Claude Code, or Codex. The live experiments described below used frozen models.
 
-**Current experiment, 3 November 2026:** we are also training small, reversible weight updates to **Qwen3-0.6B** to test whether it responds correctly when time or events change. The [research journey](docs/weight-surgery-journey.md) records every attempted configuration, failures, measurements, and Git checkpoints. The [experiment plan](docs/weight-surgery-plan.md) defines the comparison and rollback; the [evidence index](evidence/weight-surgery-20261103/journey-index.json) identifies the saved runs. This work is still being evaluated, and it does not give the model an internal clock.
+**New experiment, 3 November 2026: TickLM TimePatch.** A small trained adapter for **Qwen3-0.6B** answered all 256 held-out questions and all 128 counterfactual pairs correctly within four trained policies, using durations calculated by an external program. It also made five correct decisions in a short real-clock replay. It failed a reversed-rule test and damaged ordinary arithmetic when active, so the prototype explicitly disables the adapter for ordinary language requests. Read the [results and limitations](docs/weight-surgery-results.md), [research journey](docs/weight-surgery-journey.md), [experiment plan](docs/weight-surgery-plan.md), and [evidence index](evidence/weight-surgery-20261103/journey-index.json). This is a temporal-policy specialist with an external clock; TimesFM and the 17M decision model were not fused in this intervention.
 
 ## What this looks like
 

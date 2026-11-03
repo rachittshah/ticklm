@@ -296,8 +296,10 @@ def _static_chart(runs, output):
 
 def _save_figure(fig, output, stem, title):
     svg_path, png_path = output / f'{stem}.svg', output / f'{stem}.png'
-    fig.savefig(svg_path, format='svg', bbox_inches='tight', facecolor='white',
-                metadata={'Date': None, 'Creator': 'TickLM-Bench charts', 'Title': title})
+    with matplotlib.rc_context({'svg.hashsalt': 'TickLM-Bench-v0.1'}):
+        fig.savefig(svg_path, format='svg', bbox_inches='tight', facecolor='white',
+                    metadata={'Date': None, 'Creator': 'TickLM-Bench charts', 'Title': title})
+    svg_path.write_text('\n'.join(line.rstrip() for line in svg_path.read_text().splitlines()) + '\n')
     fig.savefig(png_path, format='png', dpi=300, bbox_inches='tight', facecolor='white',
                 metadata={'Title': title, 'Software': 'TickLM-Bench charts'})
 
@@ -318,7 +320,7 @@ def build_charts(input_path, output_path):
         'input_report_sha256': _sha256(input_path),
         'chart_source_sha256': _sha256(Path(__file__)),
         'matplotlib_version': matplotlib.__version__,
-        'matplotlib_dependency': f'matplotlib=={matplotlib.__version__} (local environment; not in project dependencies)',
+        'matplotlib_dependency': f'matplotlib=={matplotlib.__version__} (project report extra)',
         'reproduction_command': shlex.join([
             'uv', 'run', 'python', '-m', 'ticklm_bench.charts', '--input', str(input_path),
             '--output', str(output.resolve()),

@@ -1,5 +1,5 @@
 {
-  "chart_source_sha256": "0737e0d57cdafc956a30bf00550b90ea03521329bcdd0a3c37d2b4c3a4f55e93",
+  "chart_source_sha256": "ccc13be9d6ceabac5b2cbc9a8612c74e720a895d8160d0e2be8a63bcc678fa6e",
   "figures": {
     "live-policy-outcomes": {
       "formats": [
@@ -237,8 +237,8 @@
     "static-112-tier.png"
   ],
   "input_report": "/Users/rachitt/labs/temporal-bridge/benchmarks/ticklm-v0.1/results.json",
-  "input_report_sha256": "5e4d1f3bf5f289ca3b3600f8c1f0307c3d7ff8420594158451ccfff69c93b30d",
-  "matplotlib_dependency": "matplotlib==3.11.2 (local environment; not in project dependencies)",
+  "input_report_sha256": "545c451a3099fe2fb5f4d528ab5336b7203a781f6abb24f71e0f35c9a903497c",
+  "matplotlib_dependency": "matplotlib==3.11.2 (project report extra)",
   "matplotlib_version": "3.11.2",
   "reproduction_command": "uv run python -m ticklm_bench.charts --input benchmarks/ticklm-v0.1/results.json --output /Users/rachitt/labs/temporal-bridge/benchmarks/ticklm-v0.1/figures"
 }

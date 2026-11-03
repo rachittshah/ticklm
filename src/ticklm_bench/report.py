@@ -554,7 +554,7 @@ def _build_markdown(runs, live_runs, output):
                     f"{force['undecided_s']:.3f} ({horizon:.3f}) |"
                 )
         lines.append('')
-    (output / 'results.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    (output / 'results.md').write_text('\n'.join(lines).rstrip() + '\n', encoding='utf-8')
 
 
 def build_report(runs_root, output, *, live_root=None, rescore=False):

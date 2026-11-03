@@ -1,6 +1,6 @@
 # TickLM-Bench v0.1 — measured results
 
-Generated 2026-11-03T10:08:06.593167+00:00 directly from retained request records.
+Generated 2026-11-03T10:15:42.336456+00:00 directly from retained request records.
 
 This is an exploratory synthetic benchmark. It measures supplied temporal facts and rules, not an internal clock or a general state-of-the-art ranking. Raw and arithmetic-assisted inputs, sample sizes, and native clients appear separately.
 
@@ -486,4 +486,3 @@ These rows use time-weighted in-force outcomes from saved live trajectories. Sna
 | smollm3 | complete | direct-generation / mlx | LOCAL CHECKPOINT (models/benchmark-v1/smollm3-3b-4bit-d3a7e059) | 3/3; 38 | 0/0 | 0/0 | Unguarded publication | 0.000 / 0.000 / 90.000 (90.000) |
 | smollm3 | complete | direct-generation / mlx | LOCAL CHECKPOINT (models/benchmark-v1/smollm3-3b-4bit-d3a7e059) | 3/3; 38 | 0/0 | 0/0 | Freshness-only guard (state version only) | 0.000 / 0.000 / 90.000 (90.000) |
 | smollm3 | complete | direct-generation / mlx | LOCAL CHECKPOINT (models/benchmark-v1/smollm3-3b-4bit-d3a7e059) | 3/3; 38 | 0/0 | 0/0 | Oracle-guarded reference (not deployable) | 0.000 / 0.000 / 90.000 (90.000) |
-

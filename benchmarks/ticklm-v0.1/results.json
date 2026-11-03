@@ -1,6 +1,6 @@
 {
   "comparison_policy": "quality: complete shared frozen cases and identical scorer; policy alignment additionally requires same track, count, adapter type, and generation settings; model weights are excluded",
-  "generated_at": "2026-11-03T10:08:06.593725+00:00",
+  "generated_at": "2026-11-03T10:15:42.337044+00:00",
   "live_runs": [
     {
       "adapter_type": "claude_code",

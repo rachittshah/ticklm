@@ -1,0 +1,11 @@
+{
+  "system_id": "gpt-6.1-sol-codex-xhigh",
+  "track": "native-client",
+  "type": "codex",
+  "model": "gpt-6.1-sol",
+  "effort": "xhigh",
+  "max_tokens": 256,
+  "timeout_s": 120,
+  "paid": false,
+  "accounting_note": "Existing sign-in; output cap unsupported and billed cost unavailable."
+}

@@ -6,7 +6,9 @@ The idea is simple: an assistant should notice that a deadline has passed, that 
 
 TickLM adds a small program around a language model. That program watches the clock and incoming information, tells the model when it needs to respond, and checks whether its answer is still usable before showing it.
 
-The controller and TimesFM run locally. Language responses can come from local Qwen, Claude Code, or Codex. No model was retrained for these experiments.
+The controller and TimesFM run locally. Language responses can come from local Qwen, Claude Code, or Codex. The live experiments described below used frozen models.
+
+**Current experiment, 3 November 2026:** we are also training small, reversible weight updates to **Qwen3-0.6B** to test whether it responds correctly when time or events change. The [research journey](docs/weight-surgery-journey.md) records every attempted configuration, failures, measurements, and Git checkpoints. The [experiment plan](docs/weight-surgery-plan.md) defines the comparison and rollback; the [evidence index](evidence/weight-surgery-20261103/journey-index.json) identifies the saved runs. This work is still being evaluated, and it does not give the model an internal clock.
 
 ## What this looks like
 

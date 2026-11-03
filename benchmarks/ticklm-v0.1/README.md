@@ -6,6 +6,8 @@ TickLM-Bench tests two different abilities. First, can a model apply a time rule
 
 This is an exploratory first release, dated **3 November 2026**. The [measured results](results.md), [research report](report.md), [frozen protocol](preregistration.md), and [prior-art review](../../docs/benchmark-prior-art.md) explain what was run and what the evidence supports. Exo was excluded at the user's request.
 
+Download the [205-file evidence archive](evidence/ticklm-bench-v0.1-evidence.tar.gz) and its [file-by-file checksum manifest](evidence/manifest.json). The [offline parser replay](parser-replay/replay.md) is a separate post-hoc analysis of the original live recordings.
+
 ```mermaid
 flowchart LR
     C["Computer clock<br/>Monotonic elapsed time"] --> S["Current state<br/>Deadline + event version"]

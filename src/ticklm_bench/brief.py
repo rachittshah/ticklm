@@ -404,6 +404,11 @@ def render_brief(report, input_path, output_path, replay=None, replay_path=None)
     external_validation = Path(__file__).resolve().parents[2] / 'docs' / 'benchmark-external-validation.md'
     external_link = _relative_link(external_validation, output_path)
     replay_sha = replay_path and hashlib.sha256(Path(replay_path).read_bytes()).hexdigest()
+    figures = Path(output_path).parent / 'figures'
+    static_figure = ('![Strict and post-hoc scores by model](figures/static-112-tier.png)\n\n'
+                     if (figures / 'static-112-tier.png').exists() else '')
+    live_figure = ('![Correct, wrong and undecided time in the live test](figures/live-policy-outcomes.png)\n\n'
+                   if (figures / 'live-policy-outcomes.png').exists() else '')
 
     lines = [
         '# TickLM temporal benchmark: what we measured', '',
@@ -430,15 +435,16 @@ def render_brief(report, input_path, output_path, replay=None, replay_path=None)
         lines.append('')
     lines.extend([
         '## Static model runs', '',
-        ('The suite is four-choice synthetic English. Each case has a raw-timestamp form and a derived-value form; '
-         'the derived prompt includes time differences computed outside the model. The model chooses a labelled action '
+        ('The suite is four-choice synthetic English. Each case has a raw-facts view and a derived-facts view; '
+         'the derived prompt supplies primitive arithmetic where applicable. The model chooses a labelled answer '
          'from those supplied facts. It is not asked to run a clock or fetch time.'), '',
-        _static_tables(groups, tiers),
+        static_figure + _static_tables(groups, tiers),
         ('**Reading these tables:** the short tables show `strictly correct / scheduled questions`, so missing and '
          'failed requests cannot inflate the visible fraction. This is delivered task success, not pure reasoning '
          'accuracy. The detailed tables separately score completed replies, coverage and both-correct counterfactual '
          'pairs. Invalid response formats count wrong. The 28-request tier has only seven pairs per view. Direct runs '
-         'request a 256-token cap; native clients do not enforce that cap and request xhigh effort.'), '',
+         'request a 256-token cap; native clients do not enforce that cap. Claude Code and Codex request xhigh '
+         'effort; OpenCode does not expose a verified effort setting.'), '',
         ('The exact-option diagnostic was added after the first Qwen run showed that some models answered with a whole '
          'option line such as `A. ALARM` instead of a bare letter. It was applied uniformly to all systems, but it is '
          '**post-hoc and was not preregistered**. It does not replace or edit the primary strict score.'), '',
@@ -451,7 +457,7 @@ def render_brief(report, input_path, output_path, replay=None, replay_path=None)
          'records actual elapsed time, including any overrun, and an external timestamped state for each request. '
          'An event clock keeps advancing while a model is '
          'generating; the model does not receive events that arrive after its prompt was sent.'), '',
-        _live_rows(report, replay), '',
+        live_figure + _live_rows(report, replay), '',
         ('A response can be correct for its request snapshot and already be outdated when generation finishes. '
          'That is not a semantic reasoning error and does not prove that a model cannot understand time: the new event '
          'was unseen by the model. No model can react to an event it has not received; the controller has to refresh '

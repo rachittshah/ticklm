@@ -25,9 +25,23 @@ from mlx_lm.tuner.utils import linear_to_lora_layers
 from mlx_lm.utils import get_total_parameters
 
 LABELS = "ABCD"
+TARGET_SETS = {"qv": ["self_attn.q_proj", "self_attn.v_proj"],
+               "qv-mlp": ["self_attn.q_proj", "self_attn.v_proj", "mlp.gate_proj",
+                          "mlp.up_proj", "mlp.down_proj"]}
 SYSTEM = "Choose the correct answer. Reply with only one letter: A, B, C, or D."
 GENERATION_PROMPTS = ["Explain why the sky appears blue in one sentence.",
                       "What is 17 plus 25?", "Write a short polite greeting."]
+CONCISE_SYSTEM = "Answer the user's question concisely and accurately."
+DISTILL_TRAIN = [
+    ("What is 9 plus 8?", "17"),
+    ("What is 36 minus 9?", "27"),
+    ("What is 6 times 7?", "42"),
+    ("What is half of 48?", "24"),
+    ("Name a primary color.", "Blue."),
+    ("What is the opposite of narrow?", "Wide."),
+    ("Name the largest planet in our solar system.", "Jupiter."),
+    ("Write a polite evening farewell.", "Have a good evening."),
+]
 
 
 def atomic_json(path, value):
@@ -159,6 +173,52 @@ def answer_loss(logits, targets, ids, mode):
     raise ValueError("unknown loss mode")
 
 
+def distill_kl(student_logits, teacher_log_probs):
+    teacher = mx.stop_gradient(teacher_log_probs.astype(mx.float32))
+    student = student_logits.astype(mx.float32)
+    student = student - mx.logsumexp(student, axis=-1, keepdims=True)
+    return mx.mean(mx.sum(mx.exp(teacher) * (teacher - student), axis=-1))
+
+
+def cache_distill_teacher(model, tokenizer, limit, output):
+    """Snapshot base distributions for continuation positions before LoRA conversion."""
+    model.freeze()
+    model.eval()
+    records = []
+    teachers = {}
+    for index, (prompt, answer) in enumerate(DISTILL_TRAIN):
+        prefix = list(tokens_for(tokenizer, prompt, CONCISE_SYSTEM))
+        continuation = list(tokenizer.encode(answer, add_special_tokens=False))
+        # Preserve the distribution after the complete answer too: omitting it
+        # leaves stopping behavior unprotected and can hide repetition regressions.
+        inputs = prefix + continuation
+        if not prefix or not continuation or len(inputs) > limit:
+            raise ValueError("distillation continuation is empty or exceeds model context")
+        positions = list(range(len(prefix) - 1, len(prefix) + len(continuation)))
+        logits = model(mx.array([inputs]))[0, mx.array(positions), :].astype(mx.float32)
+        log_probs = mx.stop_gradient(logits - mx.logsumexp(logits, axis=-1, keepdims=True))
+        mx.eval(log_probs)
+        key = f"teacher_{index:03d}"
+        teachers[key] = log_probs
+        records.append({"id": key, "split": "train", "system": CONCISE_SYSTEM,
+                        "prompt": prompt, "continuation": answer, "prefix_tokens": prefix,
+                        "continuation_tokens": continuation, "input_tokens": inputs,
+                        "prediction_positions": positions, "teacher_tensor": key,
+                        "includes_post_continuation_prediction": True,
+                        "teacher_shape": list(log_probs.shape),
+                        "teacher_sha256_float32_bytes": hashlib.sha256(np.asarray(log_probs).tobytes()).hexdigest()})
+    save_dataset(output, "distill_train", records)
+    path = Path(output) / "distill_teacher.safetensors"
+    mx.save_safetensors(str(path), teachers)
+    run_path = Path(output) / "run.json"
+    run = json.loads(run_path.read_text())
+    run["distill_teacher"] = {"path": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                              "format": "float32 base log probabilities at continuation positions and after final token",
+                              "snapshot": "frozen base before adapter conversion"}
+    atomic_json(run_path, run)
+    return records, teachers
+
+
 def require_split(cases, split):
     if not cases or any(case.get("split") != split for case in cases):
         raise ValueError(f"expected nonempty {split} split only")
@@ -191,19 +251,38 @@ def validate_adapter_tensors(expected, actual):
         raise ValueError(f"adapter tensors incompatible: missing={missing}, extra={extra}, shape={wrong}")
 
 
-def configure_adapter(model, layers, rank):
+def adapter_provenance(directory, input_view=None):
+    """Identify the exact adapter and explicitly label cross-view evaluation."""
+    directory = Path(directory)
+    manifest = json.loads((directory / "manifest.json").read_text())
+    train_view = manifest.get("training_input_view", "raw")
+    hashes = {}
+    for name in ("manifest.json", "adapter_config.json", "adapters.safetensors"):
+        digest = hashlib.sha256()
+        with (directory / name).open("rb") as f:
+            for chunk in iter(lambda: f.read(4 * 1024 * 1024), b""):
+                digest.update(chunk)
+        hashes[name] = digest.hexdigest()
+    return {"files_sha256": hashes, "training_input_view": train_view,
+            "evaluation_input_view": input_view,
+            "input_view_mismatch": None if input_view is None else train_view != input_view}
+
+
+def configure_adapter(model, layers, rank, target_set="qv"):
     if layers <= 0 or layers > len(model.layers) or rank <= 0:
         raise ValueError("layers must be positive and no greater than model layers; rank must be positive")
+    if target_set not in TARGET_SETS:
+        raise ValueError("unsupported adapter target set")
     total = get_total_parameters(model)
     model.freeze()
-    config = {"rank": rank, "scale": 1.0, "dropout": 0.0,
-              "keys": ["self_attn.q_proj", "self_attn.v_proj"]}
+    config = {"rank": rank, "scale": 1.0, "dropout": 0.0, "keys": list(TARGET_SETS[target_set])}
     linear_to_lora_layers(model, layers, config)
     tensors = dict(tree_flatten(model.trainable_parameters()))
     trainable = sum(t.size for t in tensors.values())
     if not trainable or trainable / total > 0.01:
         raise ValueError(f"invalid trainable parameter fraction: {trainable}/{total}")
     return config, {"total": total, "trainable": trainable, "fraction": trainable / total,
+                    "target_set": target_set,
                     "tensors": {k: {"shape": list(v.shape), "count": v.size}
                                 for k, v in tensors.items()}}
 
@@ -215,7 +294,10 @@ def load_adapter(model, directory, identity, revision):
     if manifest["base_hashes"] != identity or manifest["revision"] != revision:
         raise ValueError("adapter base identity or revision does not match")
     params = config["lora_parameters"]
-    expected_config, counts = configure_adapter(model, config["num_layers"], params["rank"])
+    matching = [name for name, keys in TARGET_SETS.items() if params.get("keys") == keys]
+    if len(matching) != 1:
+        raise ValueError("unsupported adapter target set")
+    expected_config, counts = configure_adapter(model, config["num_layers"], params["rank"], matching[0])
     if params != expected_config or config.get("fine_tune_type") != "lora":
         raise ValueError("unsupported adapter configuration")
     weights = mx.load(str(directory / "adapters.safetensors"))
@@ -343,7 +425,7 @@ def inspect_model(model, tokenizer, output):
     model.eval()
     results = []
     for prompt in GENERATION_PROMPTS:
-        tokens = tokens_for(tokenizer, prompt, "Answer the user's question concisely and accurately.")
+        tokens = tokens_for(tokenizer, prompt, CONCISE_SYSTEM)
         start = perf_counter()
         response = generate(model, tokenizer, prompt=tokens, max_tokens=80, verbose=False)
         results.append({"prompt": prompt, "response": response, "elapsed_s": perf_counter() - start})
@@ -374,16 +456,19 @@ def run_train(args, model, tokenizer, identity):
     if args.paired_batches and args.batch_size % 2:
         raise ValueError("paired batch size must be even")
     anchor_prepared = None
-    if args.anchor_every:
+    distill_records, teachers = None, None
+    if args.anchor_every and args.anchor_mode == "mcq":
         anchors = build_retention_cases("train")
         require_split(anchors, "train")
         save_dataset(output, "retention_train", anchors)
         anchor_prepared, anchor_pad = prepare(anchors, tokenizer, context_limit(args.model))
         if anchor_pad != pad_id:
             raise ValueError("inconsistent tokenizer padding")
+    if args.anchor_every and args.anchor_mode == "distill":
+        distill_records, teachers = cache_distill_teacher(model, tokenizer, context_limit(args.model), output)
     ids = choice_ids(tokenizer)
     mx.random.seed(args.seed)
-    config, counts = configure_adapter(model, args.layers, args.rank)
+    config, counts = configure_adapter(model, args.layers, args.rank, target_set=args.target_set)
     opt = optim.Adam(learning_rate=args.learning_rate)
     rng = random.Random(args.seed)
     def loss_fn(model, inputs, lengths, targets, mode):
@@ -391,23 +476,34 @@ def run_train(args, model, tokenizer, identity):
         return answer_loss(logits, targets, ids, mode)
     choice_grad = nn.value_and_grad(model, lambda m, x, lens, y: loss_fn(m, x, lens, y, "choice"))
     full_grad = nn.value_and_grad(model, lambda m, x, lens, y: loss_fn(m, x, lens, y, "full"))
+    def distill_loss_fn(model, inputs, positions, teacher):
+        return distill_kl(model(inputs)[0, positions, :], teacher)
+    distill_grad = nn.value_and_grad(model, distill_loss_fn)
     logs = []; best = None
     started = perf_counter()
     interval = max(1, args.steps // 5)
     for step in range(1, args.steps + 1):
         model.train()
         anchor_step = bool(args.anchor_every and step % args.anchor_every == 0)
-        pool = anchor_prepared if anchor_step else prepared
-        mode = "full" if anchor_step else args.loss
-        batch = (sample_paired_batch(pairs, args.batch_size, rng) if args.paired_batches and not anchor_step
-                 else [pool[rng.randrange(len(pool))] for _ in range(args.batch_size)])
-        inputs, lengths = pad_tokens([tokens for _, tokens in batch], pad_id, context_limit(args.model))
-        targets = mx.array([LABELS.index(case["answer"]) for case, _ in batch])
-        loss, grads = (full_grad if mode == "full" else choice_grad)(model, inputs, lengths, targets)
+        distill_step = anchor_step and args.anchor_mode == "distill"
+        mode = "kl_distill" if distill_step else "full" if anchor_step else args.loss
+        if distill_step:
+            record = rng.choice(distill_records)
+            inputs = mx.array([record["input_tokens"]])
+            positions = mx.array(record["prediction_positions"])
+            loss, grads = distill_grad(model, inputs, positions, teachers[record["teacher_tensor"]])
+        else:
+            pool = anchor_prepared if anchor_step else prepared
+            batch = (sample_paired_batch(pairs, args.batch_size, rng) if args.paired_batches and not anchor_step
+                     else [pool[rng.randrange(len(pool))] for _ in range(args.batch_size)])
+            inputs, lengths = pad_tokens([tokens for _, tokens in batch], pad_id, context_limit(args.model))
+            targets = mx.array([LABELS.index(case["answer"]) for case, _ in batch])
+            loss, grads = (full_grad if mode == "full" else choice_grad)(model, inputs, lengths, targets)
         opt.update(model, grads)
         mx.eval(model.parameters(), opt.state, loss)
         entry = {"step": step, "train_loss": float(loss), "elapsed_s": perf_counter() - started,
-                 "data_source": "retention_train" if anchor_step else "temporal_train", "loss_mode": mode}
+                 "data_source": ("retention_distill_train" if distill_step else
+                                 "retention_train" if anchor_step else "temporal_train"), "loss_mode": mode}
         if step % interval == 0 or step == args.steps:
             records, metrics = evaluate_cases(model, tokenizer, dev, context_limit(args.model), args.eval_batch_size)
             checkpoint = output / f"checkpoint-{step:06d}"
@@ -467,12 +563,14 @@ def main():
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--rank", type=int, default=8)
     parser.add_argument("--layers", type=int, default=4)
+    parser.add_argument("--target-set", choices=list(TARGET_SETS), default="qv")
     parser.add_argument("--seed", type=int, default=1103)
     parser.add_argument("--pairs-per-family", type=int, default=32)
     parser.add_argument("--dev-pairs-per-family", type=int, default=32)
     parser.add_argument("--loss", choices=["choice", "full"], default="choice")
     parser.add_argument("--anchor-every", type=int, default=0,
                         help="Use a training-retention full-vocabulary update every N steps; zero disables")
+    parser.add_argument("--anchor-mode", choices=["mcq", "distill"], default="mcq")
     parser.add_argument("--shuffle-labels", action="store_true",
                         help="Shuffle temporal training labels once, using the seed; dev and test remain true")
     parser.add_argument("--curriculum", action="store_true",
@@ -498,12 +596,14 @@ def main():
     start = perf_counter()
     model, tokenizer = load(args.model)
     counts = load_adapter(model, args.adapter, identity, args.revision) if args.adapter else None
+    adapter_info = (adapter_provenance(args.adapter, args.input_view if args.command == "evaluate" else None)
+                    if args.adapter else None)
     atomic_json(output / "run.json", {"args": vars(args), "base_hashes": identity,
                                       "revision_provenance": "caller supplied", "load_s": perf_counter() - start,
                                       "runtime": runtime_provenance(),
                                       "checkpoint_stored_tensor_elements": checkpoint_parameter_count(args.model),
                                       "loaded_model_parameters": get_total_parameters(model),
-                                      "adapter_parameters": counts})
+                                      "adapter_parameters": counts, "adapter_provenance": adapter_info})
     if args.command == "train":
         run_train(args, model, tokenizer, identity)
     elif args.command == "inspect":

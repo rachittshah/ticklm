@@ -177,9 +177,84 @@ def test_robustness_applies_clock_view_to_primary_and_each_control(tmp_path, mon
         assert saved and all(case['prompt'].startswith('Clock features: ') for case in saved)
 
 
-@pytest.mark.parametrize('command', ['retention', 'probe'])
+@pytest.mark.parametrize('command', ['retention'])
 def test_nonraw_view_is_rejected_before_output_or_model_load(tmp_path, command):
     with pytest.raises(SystemExit):
         controls.main([command, '--input-view', 'clock-features', '--model', 'unused',
                        '--revision', 'r', '--output', str(tmp_path / 'out')])
     assert not (tmp_path / 'out').exists()
+
+
+def test_probe_applies_feature_view_to_train_and_dev_and_checks_head_view(tmp_path, monkeypatch):
+    extracted = []
+    def cases(split, pairs_per_family, seed):
+        return [{'id': f'{split}-{i}', 'pair_id': f'{split}-{i // 2}', 'split': split,
+                 'family': 'silence', 'state': {'now': 12.5, 'last_event': 10, 'threshold': 3},
+                 'prompt': f'question {i}', 'answer': 'ABCD'[i]} for i in range(4)]
+    def extract(model, tokenizer, examples, limit, batch_size):
+        extracted.append(examples)
+        return np.array([[float(i), float(i * i)] for i in range(len(examples))], dtype=np.float32)
+    class Model:
+        def freeze(self):
+            pass
+    monkeypatch.setattr(controls, 'build_cases', cases)
+    monkeypatch.setattr(controls, 'extract_probe_features', extract)
+    monkeypatch.setattr(controls, 'context_limit', lambda path: 16)
+    dev = tmp_path / 'dev'
+    dev.mkdir()
+    args = Namespace(model='unused', revision='rev', seed=3, output=str(dev), split='dev',
+                     batch_size=2, pairs_per_family=1, train_pairs_per_family=1, probe_head=None,
+                     input_view='clock-features')
+    controls.probe(Model(), None, args, {'base': 'hash'})
+    assert [batch[0]['split'] for batch in extracted] == ['train', 'dev']
+    assert all(c['prompt'].startswith('Clock features: ') for batch in extracted for c in batch)
+    for split in ('train', 'dev'):
+        data = json.loads((dev / 'datasets' / f'probe_{split}.json').read_text())
+        assert all(c['prompt'].startswith('Clock features: ') for c in data)
+    manifest = json.loads((dev / 'head_manifest.json').read_text())
+    assert manifest['input_view'] == 'clock-features'
+    args.probe_head = str(dev / 'head.npz')
+    args.output = str(tmp_path / 'reuse')
+    (tmp_path / 'reuse').mkdir()
+    controls.probe(Model(), None, args, {'base': 'hash'})
+    args.input_view = 'raw'
+    with pytest.raises(ValueError, match='view'):
+        controls.probe(Model(), None, args, {'base': 'hash'})
+
+
+def test_legacy_probe_manifest_defaults_to_raw_and_rejects_clock_features(tmp_path, monkeypatch):
+    class Model:
+        def freeze(self):
+            pass
+    monkeypatch.setattr(controls, 'build_cases', lambda split, pairs_per_family, seed: [
+        {'id': f'{split}-{i}', 'pair_id': f'{split}-{i // 2}', 'split': split, 'family': 'fixture',
+         'prompt': f'question {i}', 'answer': 'ABCD'[i]} for i in range(4)])
+    monkeypatch.setattr(controls, 'extract_probe_features', lambda model, tokenizer, cases, limit, batch_size:
+                        np.array([[float(i), float(i * i)] for i in range(len(cases))], dtype=np.float32))
+    monkeypatch.setattr(controls, 'context_limit', lambda path: 16)
+    dev = tmp_path / 'dev'
+    dev.mkdir()
+    args = Namespace(model='unused', revision='rev', seed=3, output=str(dev), split='dev',
+                     batch_size=2, pairs_per_family=1, train_pairs_per_family=1, probe_head=None,
+                     input_view='raw')
+    controls.probe(Model(), None, args, {'base': 'hash'})
+    manifest_path = dev / 'head_manifest.json'
+    manifest = json.loads(manifest_path.read_text())
+    assert manifest.pop('input_view') == 'raw'
+    manifest_path.write_text(json.dumps(manifest))
+    args.probe_head = str(dev / 'head.npz')
+    args.output = str(tmp_path / 'reuse')
+    (tmp_path / 'reuse').mkdir()
+    controls.probe(Model(), None, args, {'base': 'hash'})
+    args.input_view = 'clock-features'
+    with pytest.raises(ValueError, match='view'):
+        controls.probe(Model(), None, args, {'base': 'hash'})
+
+
+def test_probe_cli_accepts_clock_features_before_output_reservation(tmp_path, monkeypatch):
+    def stop(path):
+        raise RuntimeError('accepted by parser')
+    monkeypatch.setattr(controls, 'reserve_output', stop)
+    with pytest.raises(RuntimeError, match='accepted by parser'):
+        controls.main(['probe', '--input-view', 'clock-features', '--model', 'unused',
+                       '--revision', 'r', '--output', str(tmp_path / 'out')])

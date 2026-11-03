@@ -220,18 +220,22 @@ def probe(model, tokenizer, args, identity):
     limit = context_limit(args.model)
     model.freeze()
     data_hash = hashlib.sha256(Path(__file__).with_name("surgery_data.py").read_bytes()).hexdigest()
+    input_view = getattr(args, "input_view", "raw")
     if args.probe_head:
         head_path = Path(args.probe_head)
         manifest = json.loads(head_path.with_name("head_manifest.json").read_text())
         if (manifest["base_hashes"] != identity or manifest["revision"] != args.revision
                 or manifest["data_source_sha256"] != data_hash or manifest["seed"] != args.seed):
             raise ValueError("probe head base, revision, data code, or seed does not match")
+        if manifest.get("input_view", "raw") != input_view:
+            raise ValueError("probe head input view does not match")
         if hashlib.sha256(head_path.read_bytes()).hexdigest() != manifest["head_sha256"]:
             raise ValueError("probe head hash does not match manifest")
         with np.load(head_path, allow_pickle=False) as saved:
             head = {k: saved[k] for k in ("mean", "scale", "weight", "bias")}
     else:
-        train = build_cases("train", pairs_per_family=args.train_pairs_per_family, seed=args.seed)
+        train = with_feature_view(
+            build_cases("train", pairs_per_family=args.train_pairs_per_family, seed=args.seed), input_view)
         require_split(train, "train")
         save_dataset(output, "probe_train", train)
         train_features = extract_probe_features(model, tokenizer, train, limit, args.batch_size)
@@ -240,13 +244,15 @@ def probe(model, tokenizer, args, identity):
         head = fit_probe(train_features, labels)
         atomic_npz(output / "head.npz", head)
         manifest = {"base_hashes": identity, "revision": args.revision, "seed": args.seed,
+                    "input_view": input_view,
                     "data_source_sha256": data_hash, "training_split": "train",
                     "train_pairs_per_family": args.train_pairs_per_family,
                     "training_cases": len(train), "steps": 400, "learning_rate": .03,
                     "l2": .01, "selection": "one fixed setting, evaluated on dev",
                     "head_sha256": hashlib.sha256((output / "head.npz").read_bytes()).hexdigest()}
         atomic_json(output / "head_manifest.json", manifest)
-    cases = build_cases(args.split, pairs_per_family=args.pairs_per_family, seed=args.seed)
+    cases = with_feature_view(
+        build_cases(args.split, pairs_per_family=args.pairs_per_family, seed=args.seed), input_view)
     require_split(cases, args.split)
     save_dataset(output, f"probe_{args.split}", cases)
     features = extract_probe_features(model, tokenizer, cases, limit, args.batch_size)
@@ -295,8 +301,8 @@ def main(argv=None):
         parser.error("probe test requires --probe-head; dev trains a new head")
     if args.command != "probe" and args.probe_head:
         parser.error("--probe-head applies only to probe")
-    if args.command != "robustness" and args.input_view != "raw":
-        parser.error("clock-features input is supported only for robustness")
+    if args.command == "retention" and args.input_view != "raw":
+        parser.error("retention requires raw input")
     started = perf_counter()
     reserve_output(args.output)
     identity = base_identity(args.model)

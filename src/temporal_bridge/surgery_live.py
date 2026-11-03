@@ -12,6 +12,7 @@ from mlx_lm import load
 
 from .surgery import (
     LABELS,
+    adapter_provenance,
     atomic_json,
     base_identity,
     context_limit,
@@ -149,6 +150,7 @@ def main(argv=None):
     counts = load_adapter(model, args.adapter, identity, args.revision) if args.adapter else None
     atomic_json(output / "run.json", {
         "args": vars(args), "base_hashes": identity, "adapter_parameters": counts,
+        "adapter_identity": adapter_provenance(args.adapter, args.input_view) if args.adapter else None,
         "runtime": runtime_provenance(),
         "live_source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     })

@@ -18,3 +18,12 @@ tar -xOzf evidence/weight-surgery-20261103/completed-development-runs.tar.gz bas
 The archive excludes model and adapter weight files (`*.safetensors`) and probe feature/head arrays (`*.npz`). Those remain under ignored `artifacts/weight-surgery-20261103/` locally. Their configurations and the trained adapter tensor shapes are retained in the manifests. This is an evidence/code push, not a model-weight release. The pinned original Qwen weights remain unchanged.
 
 Dataset hashes matter independently of source hashes: adding helper functions changed the data module's source hash while the original saved development dataset remained byte-identical. The journal documents this distinction. No final test evaluation was included in this first development archive.
+
+## Subsequent development evidence
+
+| Archive | Contents | SHA-256 |
+|---|---|---|
+| [curriculum-development-run.tar.gz](curriculum-development-run.tar.gz) | All five checkpoints' development predictions and metrics, exact datasets, training log, reload check, and 205-test verification transcript. Adapter weights excluded. | `7fe87e98cd128784ba59b7b1d824267a2ecc9f10717bb9f966664656ed198e23` |
+| [duration-baseline-and-retention-failure.tar.gz](duration-baseline-and-retention-failure.tar.gz) | Unadapted duration-input baseline, raw curriculum token-distribution and generation checks, and pair-bootstrap comparison with the original raw-input baseline. Includes the repeated incorrect `100` response to `17 plus 25`. | `b6a9c814e65739400e17cdd87e27f6bab066286da337a2ba615a8ffc6315cafa` |
+
+These archives contain development results. The duration-input baseline is a distinct condition: the program supplies subtracted durations, so it cannot be interpreted as a test of the model independently calculating elapsed time. Pair-bootstrap intervals resample complete pairs and describe variability within this synthetic sample.

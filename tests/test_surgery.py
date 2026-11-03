@@ -44,6 +44,22 @@ def test_adapter_keys_and_shapes_are_strict():
         surgery.validate_adapter_tensors(expected, {**expected, "layer.lora_a": mx.zeros((1, 3))})
 
 
+def test_adapter_provenance_records_hashes_and_cross_view(tmp_path):
+    (tmp_path / "manifest.json").write_text('{"training_input_view": "clock-features"}')
+    (tmp_path / "adapter_config.json").write_text("{}")
+    (tmp_path / "adapters.safetensors").write_bytes(b"weights")
+    details = surgery.adapter_provenance(tmp_path, "raw")
+    assert details["training_input_view"] == "clock-features"
+    assert details["evaluation_input_view"] == "raw"
+    assert details["input_view_mismatch"] is True
+    for name in ("manifest.json", "adapter_config.json", "adapters.safetensors"):
+        assert details["files_sha256"][name] == hashlib.sha256((tmp_path / name).read_bytes()).hexdigest()
+    assert surgery.adapter_provenance(tmp_path, "clock-features")["input_view_mismatch"] is False
+    assert surgery.adapter_provenance(tmp_path)["input_view_mismatch"] is None
+    (tmp_path / "manifest.json").write_text("{}")
+    assert surgery.adapter_provenance(tmp_path, "raw")["training_input_view"] == "raw"
+
+
 def test_split_guard_rejects_contamination():
     surgery.require_split([{"split": "train"}], "train")
     with pytest.raises(ValueError, match="split"):
@@ -94,6 +110,30 @@ def test_tiny_qwen_adapter_training_and_reload(tmp_path):
     np.testing.assert_allclose(np.asarray(expected), np.asarray(actual), atol=1e-5)
 
 
+def test_broader_target_set_trains_only_lora_and_loads_strictly(tmp_path):
+    args = ModelArgs(model_type="qwen3", hidden_size=32, num_hidden_layers=1,
+                     intermediate_size=64, num_attention_heads=4, rms_norm_eps=1e-6,
+                     vocab_size=4096, num_key_value_heads=4, max_position_embeddings=64,
+                     head_dim=8, tie_word_embeddings=True, rope_theta=10000.0)
+    model = Model(args)
+    config, counts = surgery.configure_adapter(model, 1, 1, target_set="qv-mlp")
+    names = counts["tensors"]
+    assert counts["fraction"] <= .01
+    assert len(names) == 10
+    assert all(name.endswith(("lora_a", "lora_b")) for name in names)
+    assert any("mlp.gate_proj" in name for name in names)
+    assert any("mlp.up_proj" in name for name in names)
+    assert any("mlp.down_proj" in name for name in names)
+    surgery.save_adapter(model, tmp_path / "adapter", config, 1, {"base": "x"}, "rev", counts, 0)
+    surgery.load_adapter(Model(args), tmp_path / "adapter", {"base": "x"}, "rev")
+    config_path = tmp_path / "adapter" / "adapter_config.json"
+    bad = json.loads(config_path.read_text())
+    bad["lora_parameters"]["keys"] = ["mlp.gate_proj"]
+    config_path.write_text(json.dumps(bad))
+    with pytest.raises(ValueError, match="unsupported adapter"):
+        surgery.load_adapter(Model(args), tmp_path / "adapter", {"base": "x"}, "rev")
+
+
 def test_unpaired_retention_examples_score_without_pair_id():
     class Tokenizer:
         pad_token_id = 0
@@ -128,6 +168,22 @@ def test_choice_and_full_loss_use_different_normalizations():
     full = surgery.answer_loss(logits, labels, ids, "full")
     mx.eval(choice, full)
     assert float(full) > float(choice) + 3
+
+
+def test_distill_kl_is_zero_for_same_logits_positive_for_change_and_teacher_stopped():
+    teacher_logits = mx.array([[1., 2., 3.], [2., 0., -1.]])
+    teacher = teacher_logits - mx.logsumexp(teacher_logits, axis=-1, keepdims=True)
+    same = surgery.distill_kl(teacher_logits, teacher)
+    different = surgery.distill_kl(teacher_logits + mx.array([[2., 0., 0.], [0., 1., 0.]]), teacher)
+    student_grad = mx.grad(lambda student: surgery.distill_kl(student, teacher))(
+        teacher_logits + mx.array([[2., 0., 0.], [0., 1., 0.]]))
+    teacher_grad = mx.grad(lambda target: surgery.distill_kl(teacher_logits, target))(teacher)
+    mx.eval(same, different, student_grad, teacher_grad)
+    assert abs(float(same)) < 1e-6
+    assert float(different) > 0.01
+    np.testing.assert_array_equal(np.asarray(teacher_grad), np.zeros((2, 3)))
+    assert np.isfinite(np.asarray(student_grad)).all()
+    assert np.max(np.abs(np.asarray(student_grad))) > .01
 
 
 def test_provenance_includes_versions_source_and_saved_dataset(tmp_path):
@@ -200,10 +256,11 @@ def test_curriculum_pairs_are_accepted_by_real_batch_grouper():
     assert all(case["split"] == "train" for case in cases)
 
 
-@pytest.mark.parametrize("loss,anchor_every,curriculum,paired", [
-    ("choice", 0, False, False), ("full", 0, False, False), ("choice", 2, True, True)])
+@pytest.mark.parametrize("loss,anchor_every,curriculum,paired,anchor_mode", [
+    ("choice", 0, False, False, "mcq"), ("full", 0, False, False, "mcq"),
+    ("choice", 2, True, True, "mcq"), ("choice", 2, True, True, "distill")])
 def test_training_loop_keeps_dev_selection_and_reload_parity(
-        tmp_path, monkeypatch, loss, anchor_every, curriculum, paired):
+        tmp_path, monkeypatch, loss, anchor_every, curriculum, paired, anchor_mode):
     from temporal_bridge import surgery_data
 
     args = ModelArgs(model_type="qwen3", hidden_size=32, num_hidden_layers=1,
@@ -215,7 +272,7 @@ def test_training_loop_keeps_dev_selection_and_reload_parity(
     class Tokenizer:
         pad_token_id = 0
         def encode(self, label, add_special_tokens=False):
-            return ["ABCD".index(label) + 3]
+            return ["ABCD".index(label) + 3] if len(label) == 1 and label in "ABCD" else [7, 8]
         def apply_chat_template(self, *args, **kwargs):
             return [1, 2]
         def decode(self, tokens):
@@ -249,12 +306,28 @@ def test_training_loop_keeps_dev_selection_and_reload_parity(
     monkeypatch.setattr(surgery_data, "build_retention_cases", retention)
     monkeypatch.setattr(surgery, "load", load_base)
     monkeypatch.setattr(surgery, "apply_input_view", transform, raising=False)
+    events = []
+    real_cache = surgery.cache_distill_teacher
+    real_configure = surgery.configure_adapter
+    def observed_cache(*a, **kw):
+        events.append("cache")
+        return real_cache(*a, **kw)
+    def observed_configure(*a, **kw):
+        events.append("configure")
+        return real_configure(*a, **kw)
+    monkeypatch.setattr(surgery, "cache_distill_teacher", observed_cache)
+    monkeypatch.setattr(surgery, "configure_adapter", observed_configure)
     (tmp_path / "config.json").write_text('{"max_position_embeddings": 64}')
+    model.eval()
+    teacher_logits = model(mx.array([[1, 2, 7, 8]]))[0, 1:4, :].astype(mx.float32)
+    expected_teacher = teacher_logits - mx.logsumexp(teacher_logits, axis=-1, keepdims=True)
+    mx.eval(expected_teacher)
     cli = Namespace(model=str(tmp_path), output=str(tmp_path / "run"), seed=9,
                     pairs_per_family=3, dev_pairs_per_family=1, layers=1, rank=1, learning_rate=.01,
                     steps=2, batch_size=2, eval_batch_size=2, revision="rev", loss=loss,
                     anchor_every=anchor_every, shuffle_labels=True, curriculum=curriculum,
-                    paired_batches=paired, input_view="clock-features")
+                    paired_batches=paired, input_view="clock-features", anchor_mode=anchor_mode,
+                    target_set="qv")
     surgery.run_train(cli, model, Tokenizer(), {"base": "hash"})
     assert json.loads((tmp_path / "run" / "reload_parity.json").read_text())["passed"]
     assert (tmp_path / "run" / "checkpoint-000001" / "retention_dev_metrics.json").exists()
@@ -264,9 +337,11 @@ def test_training_loop_keeps_dev_selection_and_reload_parity(
     logs = json.loads((tmp_path / "run" / "training_log.json").read_text())
     assert logs[0]["data_source"] == "temporal_train"
     assert logs[0]["loss_mode"] == loss
-    assert logs[1]["data_source"] == ("retention_train" if anchor_every else "temporal_train")
-    assert logs[1]["loss_mode"] == ("full" if anchor_every else loss)
-    assert requested_retention == (["dev", "train"] if anchor_every else ["dev"])
+    assert logs[1]["data_source"] == ("retention_distill_train" if anchor_every and anchor_mode == "distill"
+                                       else "retention_train" if anchor_every else "temporal_train")
+    assert logs[1]["loss_mode"] == ("kl_distill" if anchor_every and anchor_mode == "distill"
+                                     else "full" if anchor_every else loss)
+    assert requested_retention == (["dev", "train"] if anchor_every and anchor_mode == "mcq" else ["dev"])
     assert views == [("train", "clock-features"), ("dev", "clock-features")]
     actual_labels = json.loads((tmp_path / "run" / "datasets" / "training_labels.json").read_text())
     train_cases = json.loads((tmp_path / "run" / "datasets" / "temporal_train.json").read_text())
@@ -274,6 +349,18 @@ def test_training_loop_keeps_dev_selection_and_reload_parity(
     assert train_cases[0]["prompt"].endswith(" FEATURE")
     retention_cases = json.loads((tmp_path / "run" / "datasets" / "retention_dev.json").read_text())
     assert retention_cases[0]["prompt"] == "question"
+    if anchor_mode == "distill":
+        assert events[:2] == ["cache", "configure"]
+        examples = json.loads((tmp_path / "run" / "datasets" / "distill_train.json").read_text())
+        assert len(examples) == 8
+        assert examples[0]["prediction_positions"] == [1, 2, 3]
+        assert examples[0]["input_tokens"] == [1, 2, 7, 8]
+        assert examples[0]["includes_post_continuation_prediction"] is True
+        teacher_file = tmp_path / "run" / "distill_teacher.safetensors"
+        saved = mx.load(str(teacher_file))
+        np.testing.assert_allclose(np.asarray(saved["teacher_000"]), np.asarray(expected_teacher), atol=1e-6)
+        run = json.loads((tmp_path / "run" / "run.json").read_text())
+        assert run["distill_teacher"]["sha256"] == hashlib.sha256(teacher_file.read_bytes()).hexdigest()
 
 
 def test_evaluate_command_applies_view_only_to_temporal_cases(tmp_path, monkeypatch):
@@ -292,6 +379,7 @@ def test_evaluate_command_applies_view_only_to_temporal_cases(tmp_path, monkeypa
                         raising=False)
     monkeypatch.setattr(surgery, "base_identity", lambda path: {})
     monkeypatch.setattr(surgery, "load", lambda path: (object(), object()))
+    monkeypatch.setattr(surgery, "load_adapter", lambda *args: {})
     monkeypatch.setattr(surgery, "get_total_parameters", lambda model: 1)
     monkeypatch.setattr(surgery, "checkpoint_parameter_count", lambda path: 1)
     monkeypatch.setattr(surgery, "context_limit", lambda path: 64)
@@ -299,10 +387,24 @@ def test_evaluate_command_applies_view_only_to_temporal_cases(tmp_path, monkeypa
         evaluated.append(source)
         return source, {}
     monkeypatch.setattr(surgery, "evaluate_cases", evaluate)
+    adapter = tmp_path / "adapter"
+    adapter.mkdir()
+    (adapter / "manifest.json").write_text('{}')
+    (adapter / "adapter_config.json").write_text('{}')
+    (adapter / "adapters.safetensors").write_bytes(b"weights")
     monkeypatch.setattr(sys, "argv", ["surgery", "evaluate", "--model", "unused", "--revision", "rev",
-                                      "--output", str(tmp_path / "run"), "--input-view", "clock-features"])
+                                      "--output", str(tmp_path / "run"), "--input-view", "clock-features",
+                                      "--adapter", str(adapter)])
     surgery.main()
     assert evaluated[0][0]["prompt"] == "temporal clock-features"
     assert evaluated[1][0]["prompt"] == "retention"
     manifest = json.loads((tmp_path / "run" / "run.json").read_text())
     assert manifest["args"]["input_view"] == "clock-features"
+    assert manifest["adapter_provenance"]["input_view_mismatch"] is True
+    monkeypatch.setattr(surgery, "inspect_model", lambda *args: None)
+    monkeypatch.setattr(sys, "argv", ["surgery", "inspect", "--model", "unused", "--revision", "rev",
+                                      "--output", str(tmp_path / "inspect"), "--adapter", str(adapter)])
+    surgery.main()
+    inspected = json.loads((tmp_path / "inspect" / "run.json").read_text())["adapter_provenance"]
+    assert inspected["evaluation_input_view"] is None
+    assert inspected["input_view_mismatch"] is None

@@ -1,8 +1,9 @@
 {
   "date": "2026-11-03",
-  "updated_through_utc": "2026-11-03 06:22 UTC",
+  "updated_through_utc": "2026-11-03 06:40 UTC",
   "branch": "experiment/temporal-weight-surgery",
-  "code_checkpoint": "c4b41bb",
+  "code_checkpoint": "94229d0",
+  "code_checkpoint_status": "pushed; later distillation-anchor implementation is in the working tree and has not been run",
   "model": {
     "local_path": "models/qwen3-0.6b-bf16-c1899de",
     "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
@@ -15,7 +16,9 @@
   "dataset_hashes": {
     "development_256": "32e346074349a11f3db710adfc672c162e14f21c653c6eee1868126c0f518656",
     "training_1024_initial": "44e947dc2d6792c5bbe0b91e686bcc95e9f047a63bae97c337b625466ce502e8",
-    "training_1024_curriculum": "e053a80c29c82772c3e98a9a4113ad4a873d32c3f9889614ac4bd2036fa803ec"
+    "training_1024_curriculum": "e053a80c29c82772c3e98a9a4113ad4a873d32c3f9889614ac4bd2036fa803ec",
+    "development_256_clock_features": "bb40ca241ef61a32a72efdd54b94f0781e36589401db91bf12528f234b0028f7",
+    "training_1024_clock_features_curriculum": "9477e59cfef8ed86ad7adb208b5ec9dd59c1691dd21ad29812ee5ce195746a5e6"
   },
   "runs": [
     {
@@ -119,7 +122,15 @@
     {
       "id": "lora28-curriculum-s1103",
       "path": "artifacts/weight-surgery-20261103/lora28-curriculum-s1103",
-      "status": "running; no selected checkpoint at indexing time",
+      "status": "complete_dev_candidate_rejected_after_generation_review",
+      "suggested_checkpoint": "checkpoint-000800",
+      "suggested_dev_accuracy": 0.51171875,
+      "suggested_pair_both_correct": 0.03125,
+      "suggested_retention_dev_accuracy": 0.6875,
+      "training_wall_s": 631.5693779580033,
+      "generation_review_path": "artifacts/weight-surgery-20261103/curriculum-generation/generation.json",
+      "retention_review_path": "artifacts/weight-surgery-20261103/curriculum-retention-dev/metrics.json",
+      "rejection_note": "Math answer loops; sky and greeting responses became repetitive. Not acceptable as a general-chat patch.",
       "command": ".venv/bin/python -m temporal_bridge.surgery train --model models/qwen3-0.6b-bf16-c1899de --revision c1899de289a04d12100db370d81485cdf75e47ca --output artifacts/weight-surgery-20261103/lora28-curriculum-s1103 --steps 1000 --batch-size 8 --eval-batch-size 4 --learning-rate 0.0003 --rank 8 --layers 28 --seed 1103 --pairs-per-family 128 --dev-pairs-per-family 32 --loss full --anchor-every 5 --curriculum --paired-batches",
       "source_hash_pointer": "run.json#/runtime/source_sha256",
       "source_sha256": {
@@ -132,6 +143,102 @@
         "retention_dev": "939277dc25fc15aceab3e1a6cd7400027d0daa7743d20069519c9257a532d8ac"
       },
       "latest_progress_path": "../lora28-curriculum-s1103.log"
+    },
+    {
+      "id": "base-features-dev-s1103",
+      "path": "artifacts/weight-surgery-20261103/base-features-dev",
+      "status": "complete_dev_clock_features_baseline",
+      "command_args_pointer": "run.json#/args",
+      "source_hash_pointer": "run.json#/runtime/source_sha256",
+      "source_sha256": {
+        "surgery.py": "4bb3d780161f96ddeac3674a81fd3575708936d4faef783a728f879f2a095c48",
+        "surgery_data.py": "a5e068ef43c48f02a045e7a8170f6e0254c703f6ddb4c5bbd9cb63dc77a13f89",
+        "surgery_features.py": "3fe1cef7d205d02a2cc1dd61859fcc7ce25ca1b13d045bfe9ad42109fd4c51b9"
+      },
+      "dataset_sha256": {
+        "temporal_dev": "bb40ca241ef61a32a72efdd54b94f0781e36589401db91bf12528f234b0028f7",
+        "retention_dev": "939277dc25fc15aceab3e1a6cd7400027d0daa7743d20069519c9257a532d8ac"
+      },
+      "dev_metrics": {
+        "item_accuracy": 0.44140625,
+        "pair_both_correct": 0.03125
+      },
+      "metrics_path": "metrics.json"
+    },
+    {
+      "id": "lora28-features-s1103",
+      "path": "artifacts/weight-surgery-20261103/lora28-features-s1103",
+      "status": "complete_dev_candidate_rejected_for_always_on_chat",
+      "command_args_pointer": "run.json#/args",
+      "source_hash_pointer": "run.json#/runtime/source_sha256",
+      "source_sha256": {
+        "surgery.py": "cabaa0adb6eba2577218d2adcc7f00a1dab9f0025b0d4e796d98d3afcbfb3fa9",
+        "surgery_data.py": "a5e068ef43c48f02a045e7a8170f6e0254c703f6ddb4c5bbd9cb63dc77a13f89",
+        "surgery_features.py": "3fe1cef7d205d02a2cc1dd61859fcc7ce25ca1b13d045bfe9ad42109fd4c51b9"
+      },
+      "dataset_sha256": {
+        "temporal_train": "9477e59cfef8ed86ad7adb208b5ec9dd59c1691dd21ad29812ee5ce195746a5e6",
+        "temporal_dev": "bb40ca241ef61a32a72efdd54b94f0781e36589401db91bf12528f234b0028f7",
+        "retention_train": "44553c95ffcbd3b6c018218ff818df59262b4b307c869b8a9afd759a54d81d98",
+        "retention_dev": "939277dc25fc15aceab3e1a6cd7400027d0daa7743d20069519c9257a532d8ac",
+        "training_labels": "c90963b9c59bec5562ec8910d8308f98b26340dd8e60502a1f88c3449dfde9ee"
+      },
+      "observed_checkpoints": [
+        {"checkpoint": "checkpoint-000240", "item_accuracy": 0.859375, "pair_both_correct": 0.71875},
+        {"checkpoint": "checkpoint-000360", "item_accuracy": 0.96875, "pair_both_correct": 0.9375},
+        {"checkpoint": "checkpoint-000480", "item_accuracy": 0.99609375, "pair_both_correct": 0.9921875},
+        {"checkpoint": "checkpoint-000600", "item_accuracy": 0.99609375, "pair_both_correct": 0.9921875}
+      ],
+      "suggested_checkpoint": "checkpoint-000480",
+      "suggestion_tie": "checkpoint-000600 has identical dev item and pair accuracy; earliest checkpoint suggested",
+      "retention_dev_accuracy_at_suggestion": 0.625,
+      "training_wall_s": 446.5434850840102,
+      "process_peak_memory_gb": 4.88,
+      "process_peak_memory_scope": "process high-water mark; not model-only or inference-only memory",
+      "generation_review_path": "artifacts/weight-surgery-20261103/features-generation/generation.json",
+      "generation_review_status": "math_correct_but_repetitive; incorrect_absorption_explanation_and_repetitive_sky_answer; greeting_acceptable",
+      "selection_path": "selection.json"
+    },
+    {
+      "id": "curriculum-retention-dev-s1103",
+      "path": "artifacts/weight-surgery-20261103/curriculum-retention-dev",
+      "status": "complete_tiny_dev_retention_smoke",
+      "adapter_path": "artifacts/weight-surgery-20261103/lora28-curriculum-s1103/checkpoint-000800",
+      "source_hash_pointer": "run.json#/runtime/source_sha256",
+      "source_sha256": {
+        "surgery.py": "cabaa0adb6eba2577218d2adcc7f00a1dab9f0025b0d4e796d98d3afcbfb3fa9",
+        "surgery_controls.py": "8d53af674830759e18634c9e6dcbb275b118b5ff3e695b48a53a94616cf96f4d",
+        "surgery_data.py": "a5e068ef43c48f02a045e7a8170f6e0254c703f6ddb4c5bbd9cb63dc77a13f89",
+        "surgery_features.py": "3fe1cef7d205d02a2cc1dd61859fcc7ce25ca1b13d045bfe9ad42109fd4c51b9"
+      },
+      "metrics_path": "metrics.json",
+      "passages": 4,
+      "scored_tokens": 66,
+      "base_cross_entropy": 3.3685339147394355,
+      "adapted_cross_entropy": 3.343616081006599,
+      "mean_kl_base_to_adapted_nats": 0.2035828178579157
+    },
+    {
+      "id": "curriculum-generation-s1103",
+      "path": "artifacts/weight-surgery-20261103/curriculum-generation",
+      "status": "complete_dev_free_generation_review",
+      "adapter_path": "artifacts/weight-surgery-20261103/lora28-curriculum-s1103/checkpoint-000800",
+      "source_hash_pointer": "run.json#/runtime/source_sha256",
+      "generation_path": "generation.json"
+    },
+    {
+      "id": "features-generation-s1103",
+      "path": "artifacts/weight-surgery-20261103/features-generation",
+      "status": "complete_dev_free_generation_review_rejected_for_always_on_chat",
+      "adapter_path": "artifacts/weight-surgery-20261103/lora28-features-s1103/checkpoint-000480",
+      "source_hash_pointer": "run.json#/runtime/source_sha256",
+      "source_sha256": {
+        "surgery.py": "a6a1c21c1c130fe70ea315f6c757519e90ca30b8eb6a0b782a35fa2d4ada76c1",
+        "surgery_data.py": "a5e068ef43c48f02a045e7a8170f6e0254c703f6ddb4c5bbd9cb63dc77a13f89",
+        "surgery_features.py": "3fe1cef7d205d02a2cc1dd61859fcc7ce25ca1b13d045bfe9ad42109fd4c51b9"
+      },
+      "run_manifest_path": "run.json",
+      "generation_path": "generation.json"
     },
     {
       "id": "verification-pytest-v1-20261103",
@@ -156,6 +263,49 @@
       "status": "passed",
       "source_hash_pointer": "code checkpoint c4b41bb",
       "code_checkpoint": "c4b41bb"
+    },
+    {
+      "id": "verification-pytest-v5-20261103",
+      "path": "artifacts/weight-surgery-20261103/verification-pytest-v5.txt",
+      "status": "passed_217_skipped_1",
+      "source_hash_pointer": "code checkpoint 94229d0",
+      "code_checkpoint": "94229d0"
+    },
+    {
+      "id": "verification-ruff-v5-20261103",
+      "path": "artifacts/weight-surgery-20261103/verification-ruff-v5.txt",
+      "status": "passed",
+      "source_hash_pointer": "code checkpoint 94229d0",
+      "code_checkpoint": "94229d0"
+    }
+  ],
+  "archives": [
+    {
+      "id": "completed-development-runs-archive",
+      "path": "evidence/weight-surgery-20261103/completed-development-runs.tar.gz",
+      "status": "pushed",
+      "sha256": "2cc0909442ddd77c53970b26c8a8a3111dd5740318975c907f3bb2923cc21521"
+    },
+    {
+      "id": "curriculum-development-run-archive",
+      "path": "evidence/weight-surgery-20261103/curriculum-development-run.tar.gz",
+      "status": "pending_push",
+      "sha256": "7fe87e98cd128784ba59b7b1d824267a2ecc9f10717bb9f966664656ed198e23"
+    },
+    {
+      "id": "duration-baseline-and-retention-failure-archive",
+      "path": "evidence/weight-surgery-20261103/duration-baseline-and-retention-failure.tar.gz",
+      "status": "pending_push",
+      "sha256": "b6a9c814e65739400e17cdd87e27f6bab066286da337a2ba615a8ffc6315cafa"
+    }
+  ],
+  "planned_runs": [
+    {
+      "id": "lora28-features-distill-s1103",
+      "path": "artifacts/weight-surgery-20261103/lora28-features-distill-s1103",
+      "status": "planned_not_run",
+      "purpose": "Clock-feature temporal training with curriculum and paired batches, plus distillation anchors for language preservation.",
+      "command": ".venv/bin/python -m temporal_bridge.surgery train --model models/qwen3-0.6b-bf16-c1899de --revision c1899de289a04d12100db370d81485cdf75e47ca --output artifacts/weight-surgery-20261103/lora28-features-distill-s1103 --steps 600 --batch-size 8 --eval-batch-size 4 --learning-rate 0.0003 --rank 8 --layers 28 --target-set qv --seed 1103 --pairs-per-family 128 --dev-pairs-per-family 32 --loss full --anchor-every 5 --anchor-mode distill --curriculum --paired-batches --input-view clock-features"
     }
   ],
   "measurement_note": "The saved MLX peak_memory_bytes fields are process high-water marks since process start or the last reset, not isolated inference-only memory."
